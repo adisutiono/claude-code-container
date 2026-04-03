@@ -10,7 +10,8 @@ PLATFORM_wsl2    := linux/amd64
 BUILD_PLATFORM    = $(PLATFORM_$(_OS))
 
 # Detect OS once; used by all targets that branch per platform
-_OS != bash -c 'source scripts/detect-os.sh && echo $$DETECTED_OS'
+# $(shell ...) is used instead of != for compatibility with GNU Make 3.81 (ships with macOS)
+_OS := $(shell bash -c 'source scripts/detect-os.sh && echo $$DETECTED_OS')
 
 ## setup    Detect OS and install prerequisites
 setup:
@@ -20,6 +21,7 @@ setup:
 build:
 	@echo "Building on: $(_OS)"
 	@if [ "$(_OS)" = "macos" ]; then \
+		container system property set build.rosetta false 2>/dev/null || true; \
 		container build \
 			--platform $(PLATFORM_macos) \
 			--file .devcontainer/Containerfile \
