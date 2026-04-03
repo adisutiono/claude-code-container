@@ -1,0 +1,58 @@
+FROM ubuntu:24.04
+
+ARG USERNAME=claude
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ── Base system + Podman dependencies ────────────────────────────────────────
+RUN apt-get update && apt-get install -y \
+    bash-completion \
+    ca-certificates \
+    curl \
+    fuse-overlayfs \
+    git \
+    gnupg \
+    lsb-release \
+    podman \
+    slirp4netns \
+    sudo \
+    uidmap \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Node.js 22 LTS ────────────────────────────────────────────────────────────
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── Claude Code ───────────────────────────────────────────────────────────────
+RUN npm install -g @anthropic-ai/claude-code
+
+# ── Non-root user ─────────────────────────────────────────────────────────────
+RUN groupadd --gid ${USER_GID} ${USERNAME} \
+    && useradd --uid ${USER_UID} --gid ${USER_GID} -m -s /bin/bash ${USERNAME} \
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME}
+
+# ── Nested container support: subuid/subgid ──────────────────────────────────
+# Allocates 65536 subordinate UIDs/GIDs for rootless Podman inside the container
+RUN echo "${USERNAME}:100000:65536" >> /etc/subuid \
+    && echo "${USERNAME}:100000:65536" >> /etc/subgid
+
+USER ${USERNAME}
+
+# ── Rootless Podman configuration ─────────────────────────────────────────────
+RUN mkdir -p \
+    /home/${USERNAME}/.config/containers \
+    /home/${USERNAME}/.local/share/containers/storage
+
+COPY --chown=${USERNAME}:${USERNAME} \
+    .devcontainer/config/containers.conf \
+    /home/${USERNAME}/.config/containers/containers.conf
+
+COPY --chown=${USERNAME}:${USERNAME} \
+    .devcontainer/config/storage.conf \
+    /home/${USERNAME}/.config/containers/storage.conf
+
+WORKDIR /workspace

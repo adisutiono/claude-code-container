@@ -1,0 +1,50 @@
+{
+  "name": "Claude Code",
+  "build": {
+    "dockerfile": "Containerfile",
+    "context": "..",
+    "args": {
+      "USERNAME": "claude",
+      "USER_UID": "1000",
+      "USER_GID": "1000"
+    }
+  },
+
+  // runArgs apply on WSL2 (Podman devcontainer lifecycle) only.
+  // On macOS, apple/container uses the "Attach to Running Container" model —
+  // the container is started by `make run` (scripts/macos/run.sh) and VSCode
+  // attaches to it; these args are not used.
+  //
+  // --security-opt seccomp=unconfined  → allows clone(2)/unshare(2) for user namespaces
+  // --security-opt apparmor=unconfined → relaxes AppArmor profile on the WSL2 Linux host
+  // --device /dev/fuse                 → enables fuse-overlayfs for nested Podman
+  // --cap-add SYS_PTRACE               → needed by some debugging workloads Claude spawns
+  "runArgs": [
+    "--security-opt", "seccomp=unconfined",
+    "--security-opt", "apparmor=unconfined",
+    "--device", "/dev/fuse",
+    "--cap-add", "SYS_PTRACE"
+  ],
+
+  "remoteUser": "claude",
+  "workspaceFolder": "/workspace",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": { "path": "/bin/bash" }
+        }
+      }
+    }
+  },
+
+  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
+
+  // Expose ports used by Claude Code workloads as needed.
+  "forwardPorts": []
+}

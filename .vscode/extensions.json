@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    // Required: opens the repo inside the devcontainer
+    "ms-vscode-remote.remote-containers",
+    // Claude Code IDE integration
+    "anthropic.claude-code"
+  ]
+}
