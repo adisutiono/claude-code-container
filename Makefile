@@ -3,6 +3,12 @@
 IMAGE_TAG        ?= claude-code-devcontainer:latest
 CONTAINER_NAME   ?= claude-code-env
 
+# macOS is always Apple Silicon (arm64); WSL2 runs on x86_64.
+# Explicit --platform prevents accidental amd64 builds that would require Rosetta.
+PLATFORM_macos   := linux/arm64
+PLATFORM_wsl2    := linux/amd64
+BUILD_PLATFORM    = $(PLATFORM_$(_OS))
+
 # Detect OS once; used by all targets that branch per platform
 _OS != bash -c 'source scripts/detect-os.sh && echo $$DETECTED_OS'
 
@@ -15,6 +21,7 @@ build:
 	@echo "Building on: $(_OS)"
 	@if [ "$(_OS)" = "macos" ]; then \
 		container build \
+			--platform $(PLATFORM_macos) \
 			--file .devcontainer/Containerfile \
 			--tag $(IMAGE_TAG) \
 			--build-arg USERNAME=claude \
@@ -23,6 +30,7 @@ build:
 			.; \
 	else \
 		podman build \
+			--platform $(PLATFORM_wsl2) \
 			--file .devcontainer/Containerfile \
 			--tag $(IMAGE_TAG) \
 			--build-arg USERNAME=claude \

@@ -1,4 +1,7 @@
-FROM ubuntu:24.04
+# TARGETPLATFORM is set by --platform at build time (linux/arm64 on macOS, linux/amd64 on WSL2).
+# Declaring it here makes the platform explicit and surfaces mismatches early.
+ARG TARGETPLATFORM
+FROM --platform=${TARGETPLATFORM} ubuntu:24.04
 
 ARG USERNAME=claude
 ARG USER_UID=1000
