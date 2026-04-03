@@ -35,7 +35,7 @@ Both platforms use the same OCI image built from `.devcontainer/Containerfile`. 
 
 **GitHub CLI:**
 ```bash
-gh repo create my-project --template OWNER/claude-code-container --clone
+gh repo create my-project --template adisutiono/claude-code-container --clone
 cd my-project
 ```
 
