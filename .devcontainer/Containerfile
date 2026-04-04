@@ -42,10 +42,14 @@ RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
-# ── Nested container support: subuid/subgid ──────────────────────────────────
-# Allocates 65536 subordinate UIDs/GIDs for rootless Podman inside the container
+# ── Nested container support: subuid/subgid + newuidmap setuid ───────────────
+# Allocates 65536 subordinate UIDs/GIDs for rootless Podman inside the container.
+# newuidmap/newgidmap must be setuid root so they can write /proc/PID/uid_map
+# when creating inner user namespaces — without this, `podman run` fails with
+# "newuidmap: write to uid_map failed: Invalid argument".
 RUN echo "${USERNAME}:100000:65536" >> /etc/subuid \
-    && echo "${USERNAME}:100000:65536" >> /etc/subgid
+    && echo "${USERNAME}:100000:65536" >> /etc/subgid \
+    && chmod u+s /usr/bin/newuidmap /usr/bin/newgidmap
 
 USER ${USERNAME}
 

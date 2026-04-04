@@ -4,6 +4,11 @@ set -euo pipefail
 
 echo "==> Initialising container environment..."
 
+# Make the root mount rshared so rootless Podman can propagate bind mounts into
+# inner containers. Without this, Podman warns "/" is not a shared mount and
+# volume mounts inside nested containers silently fail or are missing.
+sudo mount --make-rshared / 2>/dev/null || true
+
 # Migrate Podman storage schema if needed (safe no-op on first run)
 podman system migrate 2>/dev/null || true
 
