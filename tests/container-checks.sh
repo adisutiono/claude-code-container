@@ -8,11 +8,13 @@ FAIL=0
 
 check() {
   local desc="$1"; shift
-  if "$@" &>/dev/null; then
+  local output
+  if output=$("$@" 2>&1); then
     echo "  PASS  $desc"
     ((PASS++)) || true
   else
     echo "  FAIL  $desc"
+    echo "${output}" | sed 's/^/        /'
     ((FAIL++)) || true
   fi
 }

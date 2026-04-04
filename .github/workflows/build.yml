@@ -35,15 +35,16 @@ jobs:
 
       - name: Run container checks
         run: |
-          # Mount the shared root before running so Podman inside the container
-          # has the same shared-mount environment as post-create.sh provides.
+          # Make root rshared so inner Podman can propagate bind mounts —
+          # mirrors what post-create.sh does at devcontainer start.
           sudo mount --make-rshared /
 
+          # --privileged is required in CI so inner Podman can initialise its
+          # storage driver (fuse-overlayfs) and create user namespaces.
+          # In a real devcontainer the runArgs in devcontainer.json supply the
+          # equivalent capabilities; --privileged is acceptable for CI only.
           podman run --rm \
-            --security-opt seccomp=unconfined \
-            --security-opt apparmor=unconfined \
-            --device /dev/fuse \
-            --cap-add SYS_PTRACE \
+            --privileged \
             --volume "${{ github.workspace }}/tests:/tests:ro" \
             claude-code-devcontainer:ci \
             bash /tests/container-checks.sh
