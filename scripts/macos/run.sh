@@ -16,13 +16,14 @@ if container inspect "${CONTAINER_NAME}" &>/dev/null; then
 fi
 
 echo "==> Starting container '${CONTAINER_NAME}'..."
+# apple/container does not support --interactive/--tty on detached containers.
+# sleep infinity keeps the VM alive so VSCode can attach to it.
 container run \
   --name "${CONTAINER_NAME}" \
   --detach \
-  --interactive \
-  --tty \
   --volume "${WORKSPACE}:/workspace" \
-  "${IMAGE_TAG}"
+  "${IMAGE_TAG}" \
+  sleep infinity
 
 echo ""
 echo "Container '${CONTAINER_NAME}' is running."
