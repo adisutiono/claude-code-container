@@ -43,12 +43,19 @@ RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
 # ── Nested container support: subuid/subgid + newuidmap setuid ───────────────
-# Allocates 65536 subordinate UIDs/GIDs for rootless Podman inside the container.
-# newuidmap/newgidmap must be setuid root so they can write /proc/PID/uid_map
-# when creating inner user namespaces — without this, `podman run` fails with
-# "newuidmap: write to uid_map failed: Invalid argument".
+# Two non-overlapping ranges are required to work around a Podman 4.9.x bug
+# (Ubuntu 24.04 default) where it generates a 131072-UID namespace using
+# THREE mappings:
+#   0 1000 1          (current user → UID 0)
+#   1 100000 65536    (first range  → UIDs 1-65536)
+#   65537 ??? 65536   (second range → UIDs 65537-131072)
+# With only one range, Podman reuses 100000 for the third mapping, creating a
+# duplicate host range the kernel rejects. Two ranges give it distinct host
+# UIDs for each mapping: 100000-165535 then 165536-231071.
 RUN echo "${USERNAME}:100000:65536" >> /etc/subuid \
+    && echo "${USERNAME}:165536:65536" >> /etc/subuid \
     && echo "${USERNAME}:100000:65536" >> /etc/subgid \
+    && echo "${USERNAME}:165536:65536" >> /etc/subgid \
     && chmod u+s /usr/bin/newuidmap /usr/bin/newgidmap
 
 USER ${USERNAME}
