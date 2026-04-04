@@ -29,6 +29,7 @@ build:
 			--build-arg USERNAME=claude \
 			--build-arg USER_UID=1000 \
 			--build-arg USER_GID=1000 \
+			--build-arg TARGETPLATFORM=$(PLATFORM_macos) \
 			.; \
 	else \
 		podman build \
@@ -38,6 +39,7 @@ build:
 			--build-arg USERNAME=claude \
 			--build-arg USER_UID=1000 \
 			--build-arg USER_GID=1000 \
+			--build-arg TARGETPLATFORM=$(PLATFORM_wsl2) \
 			.; \
 	fi
 

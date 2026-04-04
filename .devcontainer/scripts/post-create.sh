@@ -9,6 +9,10 @@ echo "==> Initialising container environment..."
 # volume mounts inside nested containers silently fail or are missing.
 sudo mount --make-rshared / 2>/dev/null || true
 
+# /dev/fuse is created by the kernel as root-only; open it up for rootless Podman.
+sudo chmod 666 /dev/fuse     2>/dev/null || true
+sudo chmod 666 /dev/net/tun 2>/dev/null || true
+
 # Migrate Podman storage schema if needed (safe no-op on first run)
 podman system migrate 2>/dev/null || true
 

@@ -1,7 +1,7 @@
 # TARGETPLATFORM is set by --platform at build time (linux/arm64 on macOS, linux/amd64 on WSL2).
 # Declaring it here makes the platform explicit and surfaces mismatches early.
 ARG TARGETPLATFORM
-FROM --platform=${TARGETPLATFORM} ubuntu:24.04
+FROM --platform=${TARGETPLATFORM} ubuntu:25.10
 
 ARG USERNAME=claude
 ARG USER_UID=1000
@@ -43,8 +43,15 @@ RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && chmod 0440 /etc/sudoers.d/${USERNAME}
 
 # ── Nested container support: subuid/subgid + newuidmap setuid ───────────────
-RUN echo "${USERNAME}:100000:65536" >> /etc/subuid \
-    && echo "${USERNAME}:100000:65536" >> /etc/subgid \
+# 131072 = 2×65536. Podman requests a 131073-UID namespace using 3 mappings.
+# With only 65536 subUIDs it wraps the third mapping back to host UID 100000
+# (duplicate of mapping 2), which the kernel rejects. 131072 contiguous UIDs
+# ensures the third mapping advances into host UIDs 165536-231071 (no overlap):
+#   0 1000 1             UID 0
+#   1 100000 65536       host 100000-165535
+#   65537 165536 65536   host 165536-231071  ✓
+RUN printf '%s\n' "${USERNAME}:100000:131072" > /etc/subuid \
+    && printf '%s\n' "${USERNAME}:100000:131072" > /etc/subgid \
     && chmod u+s /usr/bin/newuidmap /usr/bin/newgidmap
 
 USER ${USERNAME}
