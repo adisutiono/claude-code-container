@@ -45,6 +45,7 @@ jobs:
           # equivalent capabilities; --privileged is acceptable for CI only.
           podman run --rm \
             --privileged \
+            --env CI=true \
             --volume "${{ github.workspace }}/tests:/tests:ro" \
             claude-code-devcontainer:ci \
             bash /tests/container-checks.sh
