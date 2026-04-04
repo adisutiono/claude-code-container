@@ -1,7 +1,7 @@
 # TARGETPLATFORM is set by --platform at build time (linux/arm64 on macOS, linux/amd64 on WSL2).
 # Declaring it here makes the platform explicit and surfaces mismatches early.
 ARG TARGETPLATFORM
-FROM --platform=${TARGETPLATFORM} ubuntu:25.04
+FROM --platform=${TARGETPLATFORM} ubuntu:24.04
 
 ARG USERNAME=claude
 ARG USER_UID=1000
@@ -10,7 +10,6 @@ ARG USER_GID=1000
 ENV DEBIAN_FRONTEND=noninteractive
 
 # ── Base system + Podman dependencies ────────────────────────────────────────
-# Ubuntu 25.04 ships Podman 5.x which fixes the 4.9.x UID mapping bug.
 RUN apt-get update && apt-get install -y \
     bash-completion \
     ca-certificates \
