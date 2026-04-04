@@ -1,0 +1,49 @@
+name: Build and test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    name: Build image and run container checks (WSL2 / linux/amd64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Podman and nested-container dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            podman \
+            fuse-overlayfs \
+            uidmap \
+            slirp4netns
+
+      - name: Build image
+        run: |
+          podman build \
+            --platform linux/amd64 \
+            --file .devcontainer/Containerfile \
+            --tag claude-code-devcontainer:ci \
+            --build-arg USERNAME=claude \
+            --build-arg USER_UID=1000 \
+            --build-arg USER_GID=1000 \
+            .
+
+      - name: Run container checks
+        run: |
+          # Mount the shared root before running so Podman inside the container
+          # has the same shared-mount environment as post-create.sh provides.
+          sudo mount --make-rshared /
+
+          podman run --rm \
+            --security-opt seccomp=unconfined \
+            --security-opt apparmor=unconfined \
+            --device /dev/fuse \
+            --cap-add SYS_PTRACE \
+            --volume "${{ github.workspace }}/tests:/tests:ro" \
+            claude-code-devcontainer:ci \
+            bash /tests/container-checks.sh
