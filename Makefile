@@ -7,7 +7,6 @@ CONTAINER_NAME   ?= claude-code-env
 # Explicit --platform prevents accidental amd64 builds that would require Rosetta.
 PLATFORM_macos   := linux/arm64
 PLATFORM_wsl2    := linux/amd64
-BUILD_PLATFORM    = $(PLATFORM_$(_OS))
 
 # Detect OS once; used by all targets that branch per platform
 # $(shell ...) is used instead of != for compatibility with GNU Make 3.81 (ships with macOS)
