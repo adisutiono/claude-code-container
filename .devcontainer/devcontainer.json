@@ -43,6 +43,11 @@
     }
   },
 
+  // Runs on the HOST before the container is created.
+  // Creates empty placeholder files so the mounts below never fail if the
+  // credentials don't exist yet on the host machine.
+  "initializeCommand": "bash -c '[ -f \"${HOME}/.claude.json\" ] || echo \"{}\" > \"${HOME}/.claude.json\"; [ -d \"${HOME}/.config/gh\" ] || mkdir -p \"${HOME}/.config/gh\"'",
+
   "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
 
   // Mount host Claude credentials so Claude Code is already authenticated.

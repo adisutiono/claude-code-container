@@ -16,14 +16,27 @@ if container inspect "${CONTAINER_NAME}" &>/dev/null; then
 fi
 
 echo "==> Starting container '${CONTAINER_NAME}'..."
+
+# Build optional credential mounts only if the files/dirs exist on the host.
+EXTRA_VOLUMES=()
+if [ -f "${HOME}/.claude.json" ]; then
+  EXTRA_VOLUMES+=(--volume "${HOME}/.claude.json:/home/claude/.claude.json:ro")
+else
+  echo "    INFO: ~/.claude.json not found — skipping Claude credential mount"
+fi
+if [ -d "${HOME}/.config/gh" ]; then
+  EXTRA_VOLUMES+=(--volume "${HOME}/.config/gh:/home/claude/.config/gh:ro")
+else
+  echo "    INFO: ~/.config/gh not found — skipping GitHub CLI credential mount"
+fi
+
 # apple/container does not support --interactive/--tty on detached containers.
 # sleep infinity keeps the VM alive so VSCode can attach to it.
 container run \
   --name "${CONTAINER_NAME}" \
   --detach \
   --volume "${WORKSPACE}:/workspace" \
-  --volume "${HOME}/.claude.json:/home/claude/.claude.json:ro" \
-  --volume "${HOME}/.config/gh:/home/claude/.config/gh:ro" \
+  "${EXTRA_VOLUMES[@]}" \
   "${IMAGE_TAG}" \
   sleep infinity
 
