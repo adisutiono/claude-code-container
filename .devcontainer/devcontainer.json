@@ -35,9 +35,9 @@
         "anthropic.claude-code"
       ],
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.defaultProfile.linux": "zsh",
         "terminal.integrated.profiles.linux": {
-          "bash": { "path": "/bin/bash" }
+          "zsh": { "path": "/bin/zsh" }
         }
       }
     }
