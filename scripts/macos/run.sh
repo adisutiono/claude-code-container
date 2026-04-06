@@ -55,35 +55,34 @@ container run \
 echo "==> Copying credentials into container..."
 # Run as root so we can read host-owned files (e.g. UID 501, mode 600).
 # Then chown to claude (UID 1000) so Claude Code can write to them.
-container exec --user root "${CONTAINER_NAME}" bash -c '
+container exec "${CONTAINER_NAME}" bash -c '
   if [ -f /run/host-secrets/claude.json ]; then
-    cp /run/host-secrets/claude.json /home/claude/.claude.json
-    chown claude:claude /home/claude/.claude.json
-    chmod 600 /home/claude/.claude.json
+    sudo cp /run/host-secrets/claude.json /home/claude/.claude.json
+    sudo chown claude:claude /home/claude/.claude.json
+    sudo chmod 600 /home/claude/.claude.json
     echo "    Copied ~/.claude.json"
   fi
   if [ -d /run/host-secrets/claude-dir ]; then
-    # Copy only auth-relevant files, not runtime state (cache, history, projects, etc.)
     for f in settings.json; do
       if [ -f "/run/host-secrets/claude-dir/$f" ]; then
-        cp "/run/host-secrets/claude-dir/$f" "/home/claude/.claude/$f"
-        chown claude:claude "/home/claude/.claude/$f"
+        sudo cp "/run/host-secrets/claude-dir/$f" "/home/claude/.claude/$f"
+        sudo chown claude:claude "/home/claude/.claude/$f"
         echo "    Copied ~/.claude/$f"
       fi
     done
     if [ -d /run/host-secrets/claude-dir/sessions ]; then
-      cp -r /run/host-secrets/claude-dir/sessions /home/claude/.claude/
-      chown -R claude:claude /home/claude/.claude/sessions
+      sudo cp -r /run/host-secrets/claude-dir/sessions /home/claude/.claude/
+      sudo chown -R claude:claude /home/claude/.claude/sessions
       echo "    Copied ~/.claude/sessions/"
     fi
   fi
   if [ -f /run/host-secrets/gitconfig ]; then
-    cp /run/host-secrets/gitconfig /home/claude/.gitconfig
-    chown claude:claude /home/claude/.gitconfig
-    chmod 644 /home/claude/.gitconfig
+    sudo cp /run/host-secrets/gitconfig /home/claude/.gitconfig
+    sudo chown claude:claude /home/claude/.gitconfig
+    sudo chmod 644 /home/claude/.gitconfig
     echo "    Copied ~/.gitconfig"
   fi
-' 2>&1 || echo "    WARNING: credential copy failed — you may need to run claude auth manually"
+' 2>&1 || echo "    WARNING: credential copy failed — you may need to run claude login manually"
 
 echo ""
 echo "Container '${CONTAINER_NAME}' is running."
