@@ -23,6 +23,7 @@ container run \
   --detach \
   --volume "${WORKSPACE}:/workspace" \
   --volume "${HOME}/.claude.json:/home/claude/.claude.json:ro" \
+  --volume "${HOME}/.config/gh:/home/claude/.config/gh:ro" \
   "${IMAGE_TAG}" \
   sleep infinity
 
