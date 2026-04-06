@@ -63,9 +63,19 @@ container exec --user root "${CONTAINER_NAME}" bash -c '
     echo "    Copied ~/.claude.json"
   fi
   if [ -d /run/host-secrets/claude-dir ]; then
-    cp -r /run/host-secrets/claude-dir/. /home/claude/.claude/
-    chown -R claude:claude /home/claude/.claude
-    echo "    Copied ~/.claude/"
+    # Copy only auth-relevant files, not runtime state (cache, history, projects, etc.)
+    for f in settings.json; do
+      if [ -f "/run/host-secrets/claude-dir/$f" ]; then
+        cp "/run/host-secrets/claude-dir/$f" "/home/claude/.claude/$f"
+        chown claude:claude "/home/claude/.claude/$f"
+        echo "    Copied ~/.claude/$f"
+      fi
+    done
+    if [ -d /run/host-secrets/claude-dir/sessions ]; then
+      cp -r /run/host-secrets/claude-dir/sessions /home/claude/.claude/
+      chown -R claude:claude /home/claude/.claude/sessions
+      echo "    Copied ~/.claude/sessions/"
+    fi
   fi
   if [ -f /run/host-secrets/gitconfig ]; then
     cp /run/host-secrets/gitconfig /home/claude/.gitconfig
@@ -73,7 +83,7 @@ container exec --user root "${CONTAINER_NAME}" bash -c '
     chmod 644 /home/claude/.gitconfig
     echo "    Copied ~/.gitconfig"
   fi
-'
+' 2>&1 || echo "    WARNING: credential copy failed — you may need to run claude auth manually"
 
 echo ""
 echo "Container '${CONTAINER_NAME}' is running."
