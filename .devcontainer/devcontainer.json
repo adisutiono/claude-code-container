@@ -52,7 +52,7 @@
   // credentials don't exist yet on the host machine.
   "initializeCommand": "bash -c '[ -f \"${HOME}/.claude.json\" ] || echo \"{}\" > \"${HOME}/.claude.json\"; [ -d \"${HOME}/.config/gh\" ] || mkdir -p \"${HOME}/.config/gh\"; [ -f \"${HOME}/.gitconfig\" ] || touch \"${HOME}/.gitconfig\"'",
 
-  "postCreateCommand": "bash -c 'if [ -f /run/host-secrets/claude.json ]; then cp /run/host-secrets/claude.json $HOME/.claude.json && chmod 600 $HOME/.claude.json; fi; if [ -f /run/host-secrets/gitconfig ]; then cp /run/host-secrets/gitconfig $HOME/.gitconfig && chmod 644 $HOME/.gitconfig; fi; bash ${containerWorkspaceFolder}/.devcontainer/scripts/post-create.sh'",
+  "postCreateCommand": "bash -c 'if [ -f /run/host-secrets/claude.json ]; then cp /run/host-secrets/claude.json $HOME/.claude.json && chmod 600 $HOME/.claude.json; fi; if [ -f /run/host-secrets/gitconfig ]; then cp /run/host-secrets/gitconfig $HOME/.gitconfig && chmod 644 $HOME/.gitconfig; fi; bash $HOME/.devcontainer/post-create.sh'",
 
   // Mount host Claude credentials so Claude Code is already authenticated.
   // Individual files are staged into /run/host-secrets/ (directory mount, more
