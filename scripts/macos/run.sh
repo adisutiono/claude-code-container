@@ -48,13 +48,19 @@ container run \
 # postCreateCommand does not run in the macOS attach model.
 # Copy credentials from /run/host-secrets into writable home locations.
 echo "==> Copying credentials into container..."
-container exec "${CONTAINER_NAME}" bash -c '
+# Run as root so we can read host-owned files (e.g. UID 501, mode 600).
+# Then chown to claude (UID 1000) so Claude Code can write to them.
+container exec --user root "${CONTAINER_NAME}" bash -c '
   if [ -f /run/host-secrets/claude.json ]; then
-    cp /run/host-secrets/claude.json "$HOME/.claude.json" && chmod 600 "$HOME/.claude.json"
+    cp /run/host-secrets/claude.json /home/claude/.claude.json
+    chown claude:claude /home/claude/.claude.json
+    chmod 600 /home/claude/.claude.json
     echo "    Copied ~/.claude.json"
   fi
   if [ -f /run/host-secrets/gitconfig ]; then
-    cp /run/host-secrets/gitconfig "$HOME/.gitconfig" && chmod 644 "$HOME/.gitconfig"
+    cp /run/host-secrets/gitconfig /home/claude/.gitconfig
+    chown claude:claude /home/claude/.gitconfig
+    chmod 644 /home/claude/.gitconfig
     echo "    Copied ~/.gitconfig"
   fi
 '
