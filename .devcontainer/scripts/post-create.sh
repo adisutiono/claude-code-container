@@ -7,10 +7,14 @@ echo "==> Initialising container environment..."
 # Copy host credentials into writable container-local locations.
 # Mounted read-only at /run/host-secrets/ so the host files are never modified.
 # Claude Code needs to write back to ~/.claude.json (e.g. security guide acceptance).
-CLAUDE_JSON_DEST="$(getent passwd "$(whoami)" | cut -d: -f6)/.claude.json"
+# Host files are mounted read-only at /run/host-secrets/ but may be owned by
+# the host UID (e.g. 501 on macOS), which the container user cannot read.
+# Use sudo to copy them into writable, claude-owned locations.
 if [ -f /run/host-secrets/claude.json ]; then
-  cp /run/host-secrets/claude.json "${CLAUDE_JSON_DEST}"
-  echo "    Copied Claude credentials to ${CLAUDE_JSON_DEST}"
+  sudo cp /run/host-secrets/claude.json "${HOME}/.claude.json"
+  sudo chown "$(id -u):$(id -g)" "${HOME}/.claude.json"
+  chmod 600 "${HOME}/.claude.json"
+  echo "    Copied Claude credentials to ~/.claude.json"
 else
   echo "    INFO: /run/host-secrets/claude.json not found — skipping"
 fi
