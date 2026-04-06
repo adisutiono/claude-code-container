@@ -7,9 +7,12 @@ echo "==> Initialising container environment..."
 # Copy host credentials into writable container-local locations.
 # Mounted read-only at /run/host-secrets/ so the host files are never modified.
 # Claude Code needs to write back to ~/.claude.json (e.g. security guide acceptance).
+CLAUDE_JSON_DEST="$(getent passwd "$(whoami)" | cut -d: -f6)/.claude.json"
 if [ -f /run/host-secrets/claude.json ]; then
-  cp /run/host-secrets/claude.json "${HOME}/.claude.json"
-  echo "    Copied Claude credentials to ~/.claude.json"
+  cp /run/host-secrets/claude.json "${CLAUDE_JSON_DEST}"
+  echo "    Copied Claude credentials to ${CLAUDE_JSON_DEST}"
+else
+  echo "    INFO: /run/host-secrets/claude.json not found — skipping"
 fi
 
 # Make the root mount rshared so rootless Podman can propagate bind mounts into
