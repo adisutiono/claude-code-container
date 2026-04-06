@@ -8,7 +8,9 @@ ARG USERNAME=claude
 ARG USER_UID=1000
 ARG USER_GID=1000
 
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive \
+    TERM=xterm-256color \
+    COLORTERM=truecolor
 
 # ── Base system + Podman dependencies ────────────────────────────────────────
 RUN apt-get update && apt-get install -y \
