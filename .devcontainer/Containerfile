@@ -17,6 +17,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     dnsutils \
     fuse-overlayfs \
+    fzf \
     git \
     gnupg \
     jq \
@@ -76,14 +77,14 @@ RUN mkdir /commandhistory \
     && touch /commandhistory/.bash_history \
     && chown -R ${USERNAME}:${USERNAME} /commandhistory
 
+# Create workspace and .claude directories as root before user switch.
+RUN mkdir -p /workspace /home/${USERNAME}/.claude \
+    && chown -R ${USERNAME}:${USERNAME} /workspace /home/${USERNAME}/.claude
+
 USER ${USERNAME}
 
 # Set `DEVCONTAINER` environment variable to help with orientation
 ENV DEVCONTAINER=true
-
-# Create workspace and config directories and set permissions
-RUN mkdir -p /workspace /home/${USERNAME}/.claude && \
-  chown -R ${USERNAME}:${USERNAME} /workspace /home/${USERNAME}/.claude
 
 # Default powerline10k theme
 ARG ZSH_IN_DOCKER_VERSION=1.2.0
