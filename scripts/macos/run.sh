@@ -20,7 +20,7 @@ echo "==> Starting container '${CONTAINER_NAME}'..."
 # Build optional credential mounts only if the files/dirs exist on the host.
 EXTRA_VOLUMES=()
 if [ -f "${HOME}/.claude.json" ]; then
-  EXTRA_VOLUMES+=(--volume "${HOME}/.claude.json:/home/claude/.claude.json:ro")
+  EXTRA_VOLUMES+=(--volume "${HOME}/.claude.json:/run/host-secrets/claude.json:ro")
 else
   echo "    INFO: ~/.claude.json not found — skipping Claude credential mount"
 fi

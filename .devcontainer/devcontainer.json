@@ -56,7 +56,7 @@
 
   // Mount host Claude credentials so Claude Code is already authenticated.
   "mounts": [
-    "source=${localEnv:HOME}/.claude.json,target=/home/claude/.claude.json,type=bind,readonly",
+    "source=${localEnv:HOME}/.claude.json,target=/run/host-secrets/claude.json,type=bind,readonly",
     "source=${localEnv:HOME}/.config/gh,target=/home/claude/.config/gh,type=bind,readonly",
     "source=${localEnv:HOME}/.gitconfig,target=/home/claude/.gitconfig,type=bind,readonly"
   ],

@@ -4,6 +4,14 @@ set -euo pipefail
 
 echo "==> Initialising container environment..."
 
+# Copy host credentials into writable container-local locations.
+# Mounted read-only at /run/host-secrets/ so the host files are never modified.
+# Claude Code needs to write back to ~/.claude.json (e.g. security guide acceptance).
+if [ -f /run/host-secrets/claude.json ]; then
+  cp /run/host-secrets/claude.json "${HOME}/.claude.json"
+  echo "    Copied Claude credentials to ~/.claude.json"
+fi
+
 # Make the root mount rshared so rootless Podman can propagate bind mounts into
 # inner containers. Without this, Podman warns "/" is not a shared mount and
 # volume mounts inside nested containers silently fail or are missing.
