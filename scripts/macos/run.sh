@@ -50,11 +50,11 @@ container run \
 echo "==> Copying credentials into container..."
 container exec "${CONTAINER_NAME}" bash -c '
   if [ -f /run/host-secrets/claude.json ]; then
-    cp /run/host-secrets/claude.json ~/.claude.json && chmod 600 ~/.claude.json
+    cp /run/host-secrets/claude.json "$HOME/.claude.json" && chmod 600 "$HOME/.claude.json"
     echo "    Copied ~/.claude.json"
   fi
   if [ -f /run/host-secrets/gitconfig ]; then
-    cp /run/host-secrets/gitconfig ~/.gitconfig && chmod 644 ~/.gitconfig
+    cp /run/host-secrets/gitconfig "$HOME/.gitconfig" && chmod 644 "$HOME/.gitconfig"
     echo "    Copied ~/.gitconfig"
   fi
 '
