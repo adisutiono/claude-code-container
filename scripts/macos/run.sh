@@ -30,7 +30,7 @@ else
   echo "    INFO: ~/.config/gh not found — skipping GitHub CLI credential mount"
 fi
 if [ -f "${HOME}/.gitconfig" ]; then
-  EXTRA_VOLUMES+=(--volume "${HOME}/.gitconfig:/home/claude/.gitconfig:ro")
+  EXTRA_VOLUMES+=(--volume "${HOME}/.gitconfig:/run/host-secrets/gitconfig:ro")
 else
   echo "    INFO: ~/.gitconfig not found — skipping git config mount"
 fi
@@ -44,6 +44,20 @@ container run \
   "${EXTRA_VOLUMES[@]}" \
   "${IMAGE_TAG}" \
   sleep infinity
+
+# postCreateCommand does not run in the macOS attach model.
+# Copy credentials from /run/host-secrets into writable home locations.
+echo "==> Copying credentials into container..."
+container exec "${CONTAINER_NAME}" bash -c '
+  if [ -f /run/host-secrets/claude.json ]; then
+    cp /run/host-secrets/claude.json ~/.claude.json && chmod 600 ~/.claude.json
+    echo "    Copied ~/.claude.json"
+  fi
+  if [ -f /run/host-secrets/gitconfig ]; then
+    cp /run/host-secrets/gitconfig ~/.gitconfig && chmod 644 ~/.gitconfig
+    echo "    Copied ~/.gitconfig"
+  fi
+'
 
 echo ""
 echo "Container '${CONTAINER_NAME}' is running."
