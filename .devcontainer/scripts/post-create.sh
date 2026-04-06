@@ -18,6 +18,14 @@ if [ -f /run/host-secrets/claude.json ]; then
 else
   echo "    INFO: /run/host-secrets/claude.json not found — skipping"
 fi
+if [ -f /run/host-secrets/gitconfig ]; then
+  sudo cp /run/host-secrets/gitconfig "${HOME}/.gitconfig"
+  sudo chown "$(id -u):$(id -g)" "${HOME}/.gitconfig"
+  chmod 644 "${HOME}/.gitconfig"
+  echo "    Copied git config to ~/.gitconfig"
+else
+  echo "    INFO: /run/host-secrets/gitconfig not found — skipping"
+fi
 
 # Make the root mount rshared so rootless Podman can propagate bind mounts into
 # inner containers. Without this, Podman warns "/" is not a shared mount and

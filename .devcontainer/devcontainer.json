@@ -52,13 +52,16 @@
   // credentials don't exist yet on the host machine.
   "initializeCommand": "bash -c '[ -f \"${HOME}/.claude.json\" ] || echo \"{}\" > \"${HOME}/.claude.json\"; [ -d \"${HOME}/.config/gh\" ] || mkdir -p \"${HOME}/.config/gh\"; [ -f \"${HOME}/.gitconfig\" ] || touch \"${HOME}/.gitconfig\"'",
 
-  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
+  "postCreateCommand": "bash /workspace/.devcontainer/scripts/post-create.sh",
 
   // Mount host Claude credentials so Claude Code is already authenticated.
+  // Individual files are staged into /run/host-secrets/ (directory mount, more
+  // portable) and copied to writable locations by post-create.sh.
+  // ~/.config/gh is already a directory so it can be mounted directly.
   "mounts": [
     "source=${localEnv:HOME}/.claude.json,target=/run/host-secrets/claude.json,type=bind,readonly",
-    "source=${localEnv:HOME}/.config/gh,target=/home/claude/.config/gh,type=bind,readonly",
-    "source=${localEnv:HOME}/.gitconfig,target=/home/claude/.gitconfig,type=bind,readonly"
+    "source=${localEnv:HOME}/.gitconfig,target=/run/host-secrets/gitconfig,type=bind,readonly",
+    "source=${localEnv:HOME}/.config/gh,target=/home/claude/.config/gh,type=bind,readonly"
   ],
 
   // Expose ports used by Claude Code workloads as needed.
