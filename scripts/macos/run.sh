@@ -24,6 +24,11 @@ if [ -f "${HOME}/.claude.json" ]; then
 else
   echo "    INFO: ~/.claude.json not found — skipping Claude credential mount"
 fi
+if [ -d "${HOME}/.claude" ]; then
+  EXTRA_VOLUMES+=(--volume "${HOME}/.claude:/run/host-secrets/claude-dir:ro")
+else
+  echo "    INFO: ~/.claude not found — skipping Claude session mount"
+fi
 if [ -d "${HOME}/.config/gh" ]; then
   EXTRA_VOLUMES+=(--volume "${HOME}/.config/gh:/home/claude/.config/gh:ro")
 else
@@ -56,6 +61,11 @@ container exec --user root "${CONTAINER_NAME}" bash -c '
     chown claude:claude /home/claude/.claude.json
     chmod 600 /home/claude/.claude.json
     echo "    Copied ~/.claude.json"
+  fi
+  if [ -d /run/host-secrets/claude-dir ]; then
+    cp -r /run/host-secrets/claude-dir/. /home/claude/.claude/
+    chown -R claude:claude /home/claude/.claude
+    echo "    Copied ~/.claude/"
   fi
   if [ -f /run/host-secrets/gitconfig ]; then
     cp /run/host-secrets/gitconfig /home/claude/.gitconfig

@@ -3,6 +3,7 @@
 set -euo pipefail
 
 echo "==> Initialising container environment..."
+# Note: credentials are copied by postCreateCommand before this script runs.
 
 # Make the root mount rshared so rootless Podman can propagate bind mounts into
 # inner containers. Without this, Podman warns "/" is not a shared mount and
