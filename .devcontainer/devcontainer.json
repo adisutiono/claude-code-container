@@ -45,6 +45,11 @@
 
   "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
 
+  // Mount host Claude credentials so Claude Code is already authenticated.
+  "mounts": [
+    "source=${localEnv:HOME}/.claude.json,target=/home/claude/.claude.json,type=bind,readonly"
+  ],
+
   // Expose ports used by Claude Code workloads as needed.
   "forwardPorts": []
 }
