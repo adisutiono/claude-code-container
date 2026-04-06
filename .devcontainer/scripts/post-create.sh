@@ -11,16 +11,14 @@ echo "==> Initialising container environment..."
 # the host UID (e.g. 501 on macOS), which the container user cannot read.
 # Use sudo to copy them into writable, claude-owned locations.
 if [ -f /run/host-secrets/claude.json ]; then
-  sudo cp /run/host-secrets/claude.json "${HOME}/.claude.json"
-  sudo chown "$(id -u):$(id -g)" "${HOME}/.claude.json"
+  cp /run/host-secrets/claude.json "${HOME}/.claude.json"
   chmod 600 "${HOME}/.claude.json"
   echo "    Copied Claude credentials to ~/.claude.json"
 else
   echo "    INFO: /run/host-secrets/claude.json not found — skipping"
 fi
 if [ -f /run/host-secrets/gitconfig ]; then
-  sudo cp /run/host-secrets/gitconfig "${HOME}/.gitconfig"
-  sudo chown "$(id -u):$(id -g)" "${HOME}/.gitconfig"
+  cp /run/host-secrets/gitconfig "${HOME}/.gitconfig"
   chmod 644 "${HOME}/.gitconfig"
   echo "    Copied git config to ~/.gitconfig"
 else
