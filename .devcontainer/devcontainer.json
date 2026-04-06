@@ -46,14 +46,15 @@
   // Runs on the HOST before the container is created.
   // Creates empty placeholder files so the mounts below never fail if the
   // credentials don't exist yet on the host machine.
-  "initializeCommand": "bash -c '[ -f \"${HOME}/.claude.json\" ] || echo \"{}\" > \"${HOME}/.claude.json\"; [ -d \"${HOME}/.config/gh\" ] || mkdir -p \"${HOME}/.config/gh\"'",
+  "initializeCommand": "bash -c '[ -f \"${HOME}/.claude.json\" ] || echo \"{}\" > \"${HOME}/.claude.json\"; [ -d \"${HOME}/.config/gh\" ] || mkdir -p \"${HOME}/.config/gh\"; [ -f \"${HOME}/.gitconfig\" ] || touch \"${HOME}/.gitconfig\"'",
 
   "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
 
   // Mount host Claude credentials so Claude Code is already authenticated.
   "mounts": [
     "source=${localEnv:HOME}/.claude.json,target=/home/claude/.claude.json,type=bind,readonly",
-    "source=${localEnv:HOME}/.config/gh,target=/home/claude/.config/gh,type=bind,readonly"
+    "source=${localEnv:HOME}/.config/gh,target=/home/claude/.config/gh,type=bind,readonly",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/claude/.gitconfig,type=bind,readonly"
   ],
 
   // Expose ports used by Claude Code workloads as needed.

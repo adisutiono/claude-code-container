@@ -29,6 +29,11 @@ if [ -d "${HOME}/.config/gh" ]; then
 else
   echo "    INFO: ~/.config/gh not found — skipping GitHub CLI credential mount"
 fi
+if [ -f "${HOME}/.gitconfig" ]; then
+  EXTRA_VOLUMES+=(--volume "${HOME}/.gitconfig:/home/claude/.gitconfig:ro")
+else
+  echo "    INFO: ~/.gitconfig not found — skipping git config mount"
+fi
 
 # apple/container does not support --interactive/--tty on detached containers.
 # sleep infinity keeps the VM alive so VSCode can attach to it.
