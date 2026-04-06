@@ -10,9 +10,15 @@ ARG USER_GID=1000
 
 ENV DEBIAN_FRONTEND=noninteractive \
     TERM=xterm-256color \
-    COLORTERM=truecolor
+    COLORTERM=truecolor \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8
 
 # ── Base system + Podman dependencies ────────────────────────────────────────
+RUN apt-get update && apt-get install -y locales \
+    && locale-gen en_US.UTF-8 \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN apt-get update && apt-get install -y \
     bash-completion \
     ca-certificates \
