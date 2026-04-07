@@ -85,44 +85,10 @@ container exec "${CONTAINER_NAME}" bash -c '
   fi
 ' 2>&1 || echo "    WARNING: credential copy failed — you may need to run claude login manually"
 
-# Wire workspace .claude/ config into ~/.claude/ (mirrors post-create.sh on WSL2)
-container exec "${CONTAINER_NAME}" bash -c '
-  WORKSPACE_CLAUDE="/workspace/.claude"
-
-  if [ -d "${WORKSPACE_CLAUDE}/commands" ]; then
-    rm -rf /home/claude/.claude/commands
-    ln -sfn "${WORKSPACE_CLAUDE}/commands" /home/claude/.claude/commands
-    echo "    Linked ~/.claude/commands → workspace (.claude/commands/)"
-  fi
-
-  if [ -f "${WORKSPACE_CLAUDE}/settings.json" ]; then
-    ln -sfn "${WORKSPACE_CLAUDE}/settings.json" /home/claude/.claude/settings.json
-    echo "    Linked ~/.claude/settings.json → workspace (.claude/settings.json)"
-  fi
-
-  PROJ_DIR="/home/claude/.claude/projects/-workspace"
-  if [ -d "${WORKSPACE_CLAUDE}/memory" ]; then
-    mkdir -p "${PROJ_DIR}"
-    if [ -d "${PROJ_DIR}/memory" ] && [ ! -L "${PROJ_DIR}/memory" ]; then
-      rm -rf "${PROJ_DIR}/memory"
-    fi
-    ln -sfn "${WORKSPACE_CLAUDE}/memory" "${PROJ_DIR}/memory"
-    echo "    Linked Claude Code memory → workspace (.claude/memory/)"
-  fi
-
-  if [ -d /workspace/.git ] && [ -f /workspace/scripts/hooks/pre-commit ]; then
-    ln -sf ../../scripts/hooks/pre-commit /workspace/.git/hooks/pre-commit
-    echo "    Installed pre-commit hook (secret scanning for memory files)"
-  fi
-' 2>&1 || true
-
-# Run the same environment setup as post-create.sh
-container exec "${CONTAINER_NAME}" bash -c '
-  sudo mount --make-rshared / 2>/dev/null || true
-  sudo chmod 666 /dev/fuse 2>/dev/null || true
-  sudo chmod 666 /dev/net/tun 2>/dev/null || true
-  podman system migrate 2>/dev/null || true
-' 2>&1 || true
+# Run post-create.sh from the workspace — same script as WSL2's postCreateCommand.
+# Running from /workspace means changes take effect without rebuilding the image.
+container exec "${CONTAINER_NAME}" bash /workspace/.devcontainer/scripts/post-create.sh \
+  2>&1 || echo "    WARNING: post-create.sh failed — check container logs"
 
 echo ""
 echo "Container '${CONTAINER_NAME}' is running."

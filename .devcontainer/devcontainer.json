@@ -55,7 +55,9 @@
   // credentials don't exist yet on the host machine.
   "initializeCommand": "bash -c '[ -f \"${HOME}/.claude.json\" ] || echo \"{}\" > \"${HOME}/.claude.json\"; [ -d \"${HOME}/.claude\" ] || mkdir -p \"${HOME}/.claude\"; [ -d \"${HOME}/.config/gh\" ] || mkdir -p \"${HOME}/.config/gh\"; [ -f \"${HOME}/.gitconfig\" ] || touch \"${HOME}/.gitconfig\"'",
 
-  "postCreateCommand": "bash -c 'if [ -f /run/host-secrets/claude.json ]; then cp /run/host-secrets/claude.json $HOME/.claude.json && chmod 600 $HOME/.claude.json; fi; if [ -d /run/host-secrets/claude-dir ]; then for f in settings.json .credentials.json; do [ -f /run/host-secrets/claude-dir/$f ] && cp /run/host-secrets/claude-dir/$f $HOME/.claude/$f && chmod 600 $HOME/.claude/$f; done; [ -d /run/host-secrets/claude-dir/sessions ] && cp -r /run/host-secrets/claude-dir/sessions $HOME/.claude/; fi; if [ -f /run/host-secrets/gitconfig ]; then cp /run/host-secrets/gitconfig $HOME/.gitconfig && chmod 644 $HOME/.gitconfig; fi; bash $HOME/.devcontainer/post-create.sh'",
+  // post-create.sh is run from the workspace (not baked into the image) so that
+  // changes to the script take effect on "Reopen in Container" without make build.
+  "postCreateCommand": "bash -c 'if [ -f /run/host-secrets/claude.json ]; then cp /run/host-secrets/claude.json $HOME/.claude.json && chmod 600 $HOME/.claude.json; fi; if [ -d /run/host-secrets/claude-dir ]; then for f in settings.json .credentials.json; do [ -f /run/host-secrets/claude-dir/$f ] && cp /run/host-secrets/claude-dir/$f $HOME/.claude/$f && chmod 600 $HOME/.claude/$f; done; [ -d /run/host-secrets/claude-dir/sessions ] && cp -r /run/host-secrets/claude-dir/sessions $HOME/.claude/; fi; if [ -f /run/host-secrets/gitconfig ]; then cp /run/host-secrets/gitconfig $HOME/.gitconfig && chmod 644 $HOME/.gitconfig; fi; bash /workspace/.devcontainer/scripts/post-create.sh'",
 
   // Mount host Claude credentials so Claude Code is already authenticated.
   // Individual files are staged into /run/host-secrets/ (directory mount, more
