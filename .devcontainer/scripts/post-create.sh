@@ -5,23 +5,35 @@ set -euo pipefail
 echo "==> Initialising container environment..."
 # Note: credentials are copied by postCreateCommand before this script runs.
 
-# ── Portable memory: symlink Claude Code's runtime memory to the workspace ───
-# Claude Code writes project memory to ~/.claude/projects/<path-hash>/memory/.
-# By symlinking that path to /workspace/.claude/memory/, memory files land in
-# the git workspace and travel with the repo — portable across machines.
-# Claude Code stores project memory at ~/.claude/projects/<path-with-dashes>/memory/.
-# The workspace is /workspace, so the project dir is "-workspace".
-# Symlink that memory dir into the git workspace so memory files are committed
-# and travel with the repo — portable across machines and container rebuilds.
-WORKSPACE_MEMORY="/workspace/.claude/memory"
+# ── Wire workspace .claude/ config into ~/.claude/ ───────────────────────────
+# Claude Code reads commands, settings, and memory from ~/.claude/ — not from
+# /workspace/.claude/. Symlink each subdirectory so the repo-committed config
+# is the live config, and any writes go back into the workspace.
+
+WORKSPACE_CLAUDE="/workspace/.claude"
+
+# commands/ — slash command definitions live in the repo, symlinked into ~/.claude/
+if [[ -d "${WORKSPACE_CLAUDE}/commands" ]]; then
+  rm -rf "${HOME}/.claude/commands"
+  ln -sfn "${WORKSPACE_CLAUDE}/commands" "${HOME}/.claude/commands"
+  echo "    Linked ~/.claude/commands → workspace (.claude/commands/)"
+fi
+
+# settings.json — repo permissions take precedence over anything copied from host
+if [[ -f "${WORKSPACE_CLAUDE}/settings.json" ]]; then
+  ln -sfn "${WORKSPACE_CLAUDE}/settings.json" "${HOME}/.claude/settings.json"
+  echo "    Linked ~/.claude/settings.json → workspace (.claude/settings.json)"
+fi
+
+# memory/ — symlinked via the project directory so Claude Code's runtime writes
+# land in the workspace and get committed (portable across machines/rebuilds)
 PROJ_DIR="${HOME}/.claude/projects/-workspace"
-if [[ -d "${WORKSPACE_MEMORY}" ]]; then
+if [[ -d "${WORKSPACE_CLAUDE}/memory" ]]; then
   mkdir -p "${PROJ_DIR}"
-  # Replace existing memory dir (not a symlink) with the symlink
   if [[ -d "${PROJ_DIR}/memory" && ! -L "${PROJ_DIR}/memory" ]]; then
     rm -rf "${PROJ_DIR}/memory"
   fi
-  ln -sfn "${WORKSPACE_MEMORY}" "${PROJ_DIR}/memory"
+  ln -sfn "${WORKSPACE_CLAUDE}/memory" "${PROJ_DIR}/memory"
   echo "    Linked Claude Code memory → workspace (.claude/memory/)"
 fi
 

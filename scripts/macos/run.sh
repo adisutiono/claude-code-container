@@ -85,18 +85,31 @@ container exec "${CONTAINER_NAME}" bash -c '
   fi
 ' 2>&1 || echo "    WARNING: credential copy failed — you may need to run claude login manually"
 
-# Set up memory symlink and pre-commit hook (same as post-create.sh does on WSL2)
+# Wire workspace .claude/ config into ~/.claude/ (mirrors post-create.sh on WSL2)
 container exec "${CONTAINER_NAME}" bash -c '
-  WORKSPACE_MEMORY="/workspace/.claude/memory"
+  WORKSPACE_CLAUDE="/workspace/.claude"
+
+  if [ -d "${WORKSPACE_CLAUDE}/commands" ]; then
+    rm -rf /home/claude/.claude/commands
+    ln -sfn "${WORKSPACE_CLAUDE}/commands" /home/claude/.claude/commands
+    echo "    Linked ~/.claude/commands → workspace (.claude/commands/)"
+  fi
+
+  if [ -f "${WORKSPACE_CLAUDE}/settings.json" ]; then
+    ln -sfn "${WORKSPACE_CLAUDE}/settings.json" /home/claude/.claude/settings.json
+    echo "    Linked ~/.claude/settings.json → workspace (.claude/settings.json)"
+  fi
+
   PROJ_DIR="/home/claude/.claude/projects/-workspace"
-  if [ -d "${WORKSPACE_MEMORY}" ]; then
+  if [ -d "${WORKSPACE_CLAUDE}/memory" ]; then
     mkdir -p "${PROJ_DIR}"
     if [ -d "${PROJ_DIR}/memory" ] && [ ! -L "${PROJ_DIR}/memory" ]; then
       rm -rf "${PROJ_DIR}/memory"
     fi
-    ln -sfn "${WORKSPACE_MEMORY}" "${PROJ_DIR}/memory"
+    ln -sfn "${WORKSPACE_CLAUDE}/memory" "${PROJ_DIR}/memory"
     echo "    Linked Claude Code memory → workspace (.claude/memory/)"
   fi
+
   if [ -d /workspace/.git ] && [ -f /workspace/scripts/hooks/pre-commit ]; then
     ln -sf ../../scripts/hooks/pre-commit /workspace/.git/hooks/pre-commit
     echo "    Installed pre-commit hook (secret scanning for memory files)"

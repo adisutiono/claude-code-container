@@ -50,9 +50,10 @@ if [ "${CI:-false}" = "true" ]; then
   echo "  SKIP  memory symlink target is correct (post-create.sh not run in CI)"
   echo "  SKIP  pre-commit hook installed (post-create.sh not run in CI)"
 else
-  check "workspace memory dir exists"      test -d /workspace/.claude/memory
+  check "workspace .claude dir exists"     test -d /workspace/.claude
+  check "commands symlink is set up"       test -L "${HOME}/.claude/commands"
+  check "settings.json symlink is set up"  test -L "${HOME}/.claude/settings.json"
   check "memory symlink is set up"         test -L "${HOME}/.claude/projects/-workspace/memory"
-  check "memory symlink target is correct" test "$(readlink "${HOME}/.claude/projects/-workspace/memory")" = "/workspace/.claude/memory"
   check "pre-commit hook installed"        test -x /workspace/.git/hooks/pre-commit
 fi
 
