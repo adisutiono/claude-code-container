@@ -9,7 +9,7 @@ This is a GitHub template for running Claude Code in an isolated container envir
 - **macOS 15+ (Apple Silicon)**: Uses `apple/container` (Virtualization.framework) — the container is a full Linux VM, so nested Podman has no restrictions.
 - **Windows WSL2**: Uses rootless Podman — nested containers require user namespace mappings and `fuse-overlayfs`.
 
-The OCI image is defined in `.devcontainer/Containerfile` (Ubuntu 25.10 + Node 22 + Claude Code + rootless Podman).
+The OCI image is defined in `.devcontainer/Containerfile` (Ubuntu 25.10 + Claude Code native binary + rootless Podman). Node.js is not included by default — add it via `--language node` during template init or `/add-toolchain`.
 
 ## Commands
 

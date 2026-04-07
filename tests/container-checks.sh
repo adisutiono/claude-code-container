@@ -21,7 +21,6 @@ check() {
 
 # ── Toolchain ─────────────────────────────────────────────────────────────────
 echo "==> Toolchain"
-check "node is installed"              node --version
 check "claude is installed"            claude --version
 check "podman is installed"            podman --version
 check "fuse-overlayfs is present"      command -v fuse-overlayfs

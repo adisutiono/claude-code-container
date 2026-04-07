@@ -20,7 +20,7 @@ This repository provides a containerised development environment for Claude Code
 Host (macOS)
   └── apple/container VM (Virtualization.framework)
        └── Ubuntu container (our Containerfile)
-            ├── Claude Code (Node.js)
+            ├── Claude Code (native binary)
             └── Podman (rootless) → nested containers
 ```
 
@@ -33,7 +33,7 @@ Host (Windows)
   └── WSL2 (Linux kernel)
        └── Podman (rootless, via socket)
             └── Ubuntu container (our Containerfile)
-                 ├── Claude Code (Node.js)
+                 ├── Claude Code (native binary)
                  └── Podman (rootless) → nested containers
 ```
 

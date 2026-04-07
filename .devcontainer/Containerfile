@@ -2,7 +2,6 @@
 # Declaring it here makes the platform explicit and surfaces mismatches early.
 ARG TARGETPLATFORM
 FROM --platform=${TARGETPLATFORM} ubuntu:25.10
-ARG CLAUDE_CODE_VERSION=latest
 
 ARG USERNAME=claude
 ARG USER_UID=1000
@@ -49,14 +48,6 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
       > /etc/apt/sources.list.d/github-cli.list \
     && apt-get update && apt-get install -y gh \
     && rm -rf /var/lib/apt/lists/*
-
-# ── Node.js 22 LTS ────────────────────────────────────────────────────────────
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs \
-    && rm -rf /var/lib/apt/lists/*
-
-# ── Claude Code ───────────────────────────────────────────────────────────────
-RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 
 # ── Non-root user ─────────────────────────────────────────────────────────────
 # Ubuntu 24.04 ships with an 'ubuntu' user already occupying UID/GID 1000.
@@ -107,6 +98,14 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
   -a "[ -f /usr/share/fzf/completion.zsh ] && source /usr/share/fzf/completion.zsh" \
   -a "export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
   -x
+
+# ── Claude Code (native binary) ──────────────────────────────────────────────
+# Installed as the non-root user so the binary lands in ~/.local/bin/claude.
+# The install script downloads a platform-appropriate binary, verifies its
+# SHA-256 checksum, and runs `claude install` to set up the launcher.
+# PATH is set before install so the script doesn't warn about ~/.local/bin.
+ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
+RUN curl -fsSL https://claude.ai/install.sh | bash
 
 # ── Rootless Podman configuration ─────────────────────────────────────────────
 RUN mkdir -p \

@@ -15,7 +15,7 @@ This document describes the isolation boundaries for the Claude Code container e
 ├─────────────────────────────────────────────────┤
 │ Outer container (semi-trusted)                  │
 │  ├── /workspace (read-write, project files)     │
-│  ├── Claude Code (Node.js process)              │
+│  ├── Claude Code (native binary)                │
 │  ├── Git operations (within /workspace)         │
 │  └── Podman (rootless, nested containers)       │
 ├─────────────────────────────────────────────────┤
@@ -33,7 +33,7 @@ This document describes the isolation boundaries for the Claude Code container e
 - Spawn nested containers via rootless Podman
 - Access the network (outbound, via NAT / slirp4netns)
 - Read host credentials (Claude auth, git config, GitHub CLI)
-- Install packages via apt, npm, pip (inside the container)
+- Install packages via apt, pip (inside the container)
 
 ## What the Container CANNOT Do
 
