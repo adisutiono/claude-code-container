@@ -170,6 +170,21 @@ check \"${PRIMARY_LANGUAGE} is installed\"         ${CHECK_CMD}" \
   fi
 fi
 
+# ── Clear template memory ─────────────────────────────────────────────────────
+# Memory files in .claude/memory/ are specific to this template repo's development.
+# Remove them so the new project starts with a clean slate.
+find "${REPO_ROOT}/.claude/memory" -name "*.md" ! -name "MEMORY.md" -delete 2>/dev/null || true
+# Reset MEMORY.md index
+cat > "${REPO_ROOT}/.claude/memory/MEMORY.md" <<'MEMEOF'
+# Memory Index
+
+Memory files are committed to the repo so Claude Code context is portable across
+machines and survives container rebuilds. A pre-commit hook scans for secrets.
+
+<!-- Add memory entries below as: - [Title](file.md) — one-line hook -->
+MEMEOF
+echo "    Cleared template memory files"
+
 echo ""
 echo "Template initialised for '${PROJECT_NAME}'."
 echo "Next steps:"
