@@ -46,3 +46,10 @@ out/
 
 # Claude Code local state (auth is on host, not in repo)
 .claude.json
+
+# Claude memory files ARE committed (.claude/memory/*.md) for portable context.
+# Exclude non-markdown files that might accidentally leak into the memory directory.
+.claude/memory/**/*.json
+.claude/memory/**/*.key
+.claude/memory/**/*.pem
+.claude/memory/**/*.env

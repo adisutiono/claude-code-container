@@ -61,6 +61,38 @@ The inner Podman is configured for rootless operation inside an already-namespac
 - **Cgroup**: `cgroupfs` manager (no systemd inside the container)
 - **subuid/subgid**: 131072 range to avoid the triple-mapping overlap bug
 
+## Context Persistence
+
+Claude Code writes project memory to `~/.claude/projects/<path>/memory/`. Inside the
+container the workspace path is `/workspace`, so the project directory is
+`~/.claude/projects/-workspace/`. At container start, `post-create.sh` (WSL2) or
+`run.sh` (macOS) creates a symlink:
+
+```
+~/.claude/projects/-workspace/memory/ → /workspace/.claude/memory/
+```
+
+This means memory files land in the git workspace. They are committed to the repo,
+making context portable across machines and container rebuilds. A pre-commit hook
+(`scripts/hooks/pre-commit`) scans memory files for potential secrets before allowing
+the commit.
+
+```
+Container rebuild          Clone on new machine
+     │                           │
+     ▼                           ▼
+git checkout                git clone
+     │                           │
+     ▼                           ▼
+.claude/memory/ intact     .claude/memory/ intact
+     │                           │
+     ▼                           ▼
+post-create.sh symlinks    post-create.sh symlinks
+     │                           │
+     ▼                           ▼
+Claude Code reads memory   Claude Code reads memory
+```
+
 ## Security Model
 
 See [SANDBOX-MODEL.md](SANDBOX-MODEL.md) for the full isolation and threat model.

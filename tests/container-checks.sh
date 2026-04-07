@@ -40,6 +40,13 @@ echo "==> Podman configuration"
 check "containers.conf present"        test -f "${HOME}/.config/containers/containers.conf"
 check "storage.conf present"           test -f "${HOME}/.config/containers/storage.conf"
 
+# ── Context persistence ──────────────────────────────────────────────────────
+echo "==> Context persistence"
+check "workspace memory dir exists"      test -d /workspace/.claude/memory
+check "memory symlink is set up"         test -L "${HOME}/.claude/projects/-workspace/memory"
+check "memory symlink target is correct" test "$(readlink "${HOME}/.claude/projects/-workspace/memory")" = "/workspace/.claude/memory"
+check "pre-commit hook installed"        test -x /workspace/.git/hooks/pre-commit
+
 # ── Nested container smoke test ───────────────────────────────────────────────
 # Skipped in CI: nested user namespaces require kernel-level support that
 # GitHub Actions standard runners do not provide (newuidmap cannot remap IDs

@@ -65,6 +65,24 @@ docs/                 → Architecture docs, sandbox model, conventions
 - `scripts/wsl2/install.sh` — WSL2 system configuration
 - Security-related `runArgs` in `devcontainer.json`
 
+## Memory Persistence
+
+Memory files are committed to the repo at `.claude/memory/` so context is portable
+across machines and survives container rebuilds. At container start, a symlink wires
+`~/.claude/projects/-workspace/memory/` → `/workspace/.claude/memory/` so Claude Code's
+runtime writes land directly in the workspace.
+
+**CRITICAL: Never store secrets in memory files.** Memory files are committed to git.
+Do not store API keys, tokens, passwords, private keys, credentials, connection strings,
+or any sensitive values in memory content. A pre-commit hook scans for common secret
+patterns and blocks the commit if any are found.
+
+When saving memories, focus on:
+- User preferences and working style
+- Architectural decisions and their rationale
+- Project context and goals
+- Feedback on approaches (what worked, what didn't)
+
 ## Self-Improvement Guidelines
 
 When asked to improve the repo (via `/improve-repo` or similar):

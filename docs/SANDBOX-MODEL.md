@@ -41,7 +41,7 @@ This document describes the isolation boundaries for the Claude Code container e
 - Modify host credentials (mounted read-only)
 - Run privileged operations (no `--privileged`, rootless Podman)
 - Access other containers or VMs on the host
-- Survive a container stop/rebuild (ephemeral by design)
+- Survive a container stop/rebuild (ephemeral by design, except for Claude Code memory committed to `.claude/memory/` via git)
 - Access host Docker/Podman daemon (no socket mount)
 
 ## Risk Mitigations
@@ -51,6 +51,7 @@ This document describes the isolation boundaries for the Claude Code container e
 | Claude Code modifies critical config | `.claude/settings.json` deny list; CLAUDE.md conventions |
 | Credential exfiltration | Read-only mounts; credentials are API tokens, not passwords |
 | Nested container escape | User namespace isolation; no `--privileged` flag |
+| Secret leak via memory files | Pre-commit hook scans `.claude/memory/` for secret patterns; blocks commit on match |
 | Supply chain attack via Containerfile | Pinned base images; HTTPS-only package sources; GPG-verified repos |
 | Runaway resource usage | macOS: VM resource limits in `run.sh`; WSL2: Podman cgroup limits |
 | Persistent malware | Container is ephemeral; `make clean` removes the image entirely |
