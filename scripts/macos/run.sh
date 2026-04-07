@@ -63,10 +63,11 @@ container exec "${CONTAINER_NAME}" bash -c '
     echo "    Copied ~/.claude.json"
   fi
   if [ -d /run/host-secrets/claude-dir ]; then
-    for f in settings.json; do
+    for f in settings.json .credentials.json; do
       if [ -f "/run/host-secrets/claude-dir/$f" ]; then
         sudo cp "/run/host-secrets/claude-dir/$f" "/home/claude/.claude/$f"
         sudo chown claude:claude "/home/claude/.claude/$f"
+        sudo chmod 600 "/home/claude/.claude/$f"
         echo "    Copied ~/.claude/$f"
       fi
     done
