@@ -105,7 +105,8 @@ RUN sh -c "$(wget -O- https://github.com/deluan/zsh-in-docker/releases/download/
 # SHA-256 checksum, and runs `claude install` to set up the launcher.
 # PATH is set before install so the script doesn't warn about ~/.local/bin.
 ENV PATH="/home/${USERNAME}/.local/bin:${PATH}"
-RUN curl -fsSL https://claude.ai/install.sh | bash
+RUN curl -fsSL https://claude.ai/install.sh | bash \
+    && sudo ln -sf "/home/${USERNAME}/.local/bin/claude" /usr/local/bin/claude
 
 # ── Rootless Podman configuration ─────────────────────────────────────────────
 RUN mkdir -p \
