@@ -105,9 +105,21 @@ Claude Code's tool permissions are encoded in `.claude/settings.json` using tool
 
 The slash commands above form a closed loop: `/improve-repo` audits the full repo, `/update-deps` keeps dependencies current, `/audit-security` verifies isolation, and `/add-toolchain` extends capabilities. Findings are proposed as branches, never committed directly to main. The `.github/ISSUE_TEMPLATE/claude-improvement.md` template provides a structured format for tracking AI-proposed changes.
 
+## Claude Code config wiring
+
+The repo's `.claude/` directory is the live config for Claude Code inside the container. At container start, `post-create.sh` (WSL2) / `run.sh` (macOS) creates symlinks:
+
+| `~/.claude/` path | Source |
+|---|---|
+| `commands/` | `/workspace/.claude/commands/` (slash commands) |
+| `settings.json` | `/workspace/.claude/settings.json` (permissions) |
+| `projects/-workspace/memory/` | `/workspace/.claude/memory/` (portable memory) |
+
+This means edits to `.claude/` in the repo take effect immediately without rebuild.
+
 ## Context persistence
 
-Claude Code memory is committed to the repo at `.claude/memory/`. At container start, `post-create.sh` symlinks `~/.claude/projects/-workspace/memory/` → `/workspace/.claude/memory/` so runtime writes land in the workspace. This makes context portable across machines and container rebuilds.
+Claude Code memory is committed to the repo at `.claude/memory/`. The memory symlink above ensures runtime writes land in the workspace and get committed. This makes context portable across machines and container rebuilds.
 
 A pre-commit hook (`scripts/hooks/pre-commit`) scans memory files for secret patterns (API keys, tokens, private keys, etc.) and blocks the commit if any are found. **Never store credentials or sensitive values in memory files.**
 
