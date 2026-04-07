@@ -1,0 +1,24 @@
+{
+  "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/settings-schema.json",
+  "permissions": {
+    "allow": [
+      "Read any file in the repository",
+      "Edit files under src/, docs/, tests/, .claude/commands/",
+      "Run make build, make status, make clean",
+      "Run tests/container-checks.sh",
+      "Run git status, git diff, git log, git branch",
+      "Create new files in src/, docs/, tests/",
+      "Run npm install, npm test, pip install"
+    ],
+    "deny": [
+      "Never modify .devcontainer/config/ without explicit approval",
+      "Never run make run or container run (host-side operation)",
+      "Never modify scripts/macos/ or scripts/wsl2/ without explicit approval",
+      "Never push to main branch directly",
+      "Never delete files outside of src/",
+      "Never modify CI workflows without explicit approval",
+      "Never access or modify /run/host-secrets/ contents",
+      "Never run sudo commands without explicit approval"
+    ]
+  }
+}
