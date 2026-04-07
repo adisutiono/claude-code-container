@@ -40,6 +40,22 @@ echo "==> Podman configuration"
 check "containers.conf present"        test -f "${HOME}/.config/containers/containers.conf"
 check "storage.conf present"           test -f "${HOME}/.config/containers/storage.conf"
 
+# ── Context persistence ──────────────────────────────────────────────────────
+# Skipped in CI: the workspace is not mounted in CI containers, and post-create.sh
+# (which sets up the symlink and installs the hook) only runs in a real devcontainer.
+echo "==> Context persistence"
+if [ "${CI:-false}" = "true" ]; then
+  echo "  SKIP  workspace memory dir exists (workspace not mounted in CI)"
+  echo "  SKIP  memory symlink is set up (post-create.sh not run in CI)"
+  echo "  SKIP  memory symlink target is correct (post-create.sh not run in CI)"
+  echo "  SKIP  pre-commit hook installed (post-create.sh not run in CI)"
+else
+  check "workspace memory dir exists"      test -d /workspace/.claude/memory
+  check "memory symlink is set up"         test -L "${HOME}/.claude/projects/-workspace/memory"
+  check "memory symlink target is correct" test "$(readlink "${HOME}/.claude/projects/-workspace/memory")" = "/workspace/.claude/memory"
+  check "pre-commit hook installed"        test -x /workspace/.git/hooks/pre-commit
+fi
+
 # ── Nested container smoke test ───────────────────────────────────────────────
 # Skipped in CI: nested user namespaces require kernel-level support that
 # GitHub Actions standard runners do not provide (newuidmap cannot remap IDs

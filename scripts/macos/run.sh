@@ -85,6 +85,32 @@ container exec "${CONTAINER_NAME}" bash -c '
   fi
 ' 2>&1 || echo "    WARNING: credential copy failed — you may need to run claude login manually"
 
+# Set up memory symlink and pre-commit hook (same as post-create.sh does on WSL2)
+container exec "${CONTAINER_NAME}" bash -c '
+  WORKSPACE_MEMORY="/workspace/.claude/memory"
+  PROJ_DIR="/home/claude/.claude/projects/-workspace"
+  if [ -d "${WORKSPACE_MEMORY}" ]; then
+    mkdir -p "${PROJ_DIR}"
+    if [ -d "${PROJ_DIR}/memory" ] && [ ! -L "${PROJ_DIR}/memory" ]; then
+      rm -rf "${PROJ_DIR}/memory"
+    fi
+    ln -sfn "${WORKSPACE_MEMORY}" "${PROJ_DIR}/memory"
+    echo "    Linked Claude Code memory → workspace (.claude/memory/)"
+  fi
+  if [ -d /workspace/.git ] && [ -f /workspace/scripts/hooks/pre-commit ]; then
+    ln -sf ../../scripts/hooks/pre-commit /workspace/.git/hooks/pre-commit
+    echo "    Installed pre-commit hook (secret scanning for memory files)"
+  fi
+' 2>&1 || true
+
+# Run the same environment setup as post-create.sh
+container exec "${CONTAINER_NAME}" bash -c '
+  sudo mount --make-rshared / 2>/dev/null || true
+  sudo chmod 666 /dev/fuse 2>/dev/null || true
+  sudo chmod 666 /dev/net/tun 2>/dev/null || true
+  podman system migrate 2>/dev/null || true
+' 2>&1 || true
+
 echo ""
 echo "Container '${CONTAINER_NAME}' is running."
 echo "In VS Code: Command Palette → 'Dev Containers: Attach to Running Apple Container...'"

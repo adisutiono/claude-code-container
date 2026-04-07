@@ -105,6 +105,12 @@ Claude Code's tool permissions are encoded in `.claude/settings.json` using tool
 
 The slash commands above form a closed loop: `/improve-repo` audits the full repo, `/update-deps` keeps dependencies current, `/audit-security` verifies isolation, and `/add-toolchain` extends capabilities. Findings are proposed as branches, never committed directly to main. The `.github/ISSUE_TEMPLATE/claude-improvement.md` template provides a structured format for tracking AI-proposed changes.
 
+## Context persistence
+
+Claude Code memory is committed to the repo at `.claude/memory/`. At container start, `post-create.sh` symlinks `~/.claude/projects/-workspace/memory/` → `/workspace/.claude/memory/` so runtime writes land in the workspace. This makes context portable across machines and container rebuilds.
+
+A pre-commit hook (`scripts/hooks/pre-commit`) scans memory files for secret patterns (API keys, tokens, private keys, etc.) and blocks the commit if any are found. **Never store credentials or sensitive values in memory files.**
+
 ## Template system
 
 This repo is a GitHub Template Repository. Two instantiation paths:
