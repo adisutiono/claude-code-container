@@ -51,47 +51,13 @@ container run \
   sleep infinity
 
 # postCreateCommand does not run in the macOS attach model.
-# Copy credentials from /run/host-secrets into writable home locations.
-echo "==> Copying credentials into container..."
-# Run as root so we can read host-owned files (e.g. UID 501, mode 600).
-# Then chown to claude (UID 1000) so Claude Code can write to them.
-container exec "${CONTAINER_NAME}" bash -c '
-  if [ -f /run/host-secrets/claude.json ]; then
-    sudo cp /run/host-secrets/claude.json /home/claude/.claude.json
-    sudo chown claude:claude /home/claude/.claude.json
-    sudo chmod 600 /home/claude/.claude.json
-    echo "    Copied ~/.claude.json"
-  fi
-  if [ -d /run/host-secrets/claude-dir ]; then
-    for f in settings.json .credentials.json; do
-      if [ -f "/run/host-secrets/claude-dir/$f" ]; then
-        sudo cp "/run/host-secrets/claude-dir/$f" "/home/claude/.claude/$f"
-        sudo chown claude:claude "/home/claude/.claude/$f"
-        sudo chmod 600 "/home/claude/.claude/$f"
-        echo "    Copied ~/.claude/$f"
-      fi
-    done
-    if [ -d /run/host-secrets/claude-dir/sessions ]; then
-      sudo cp -r /run/host-secrets/claude-dir/sessions /home/claude/.claude/
-      sudo chown -R claude:claude /home/claude/.claude/sessions
-      echo "    Copied ~/.claude/sessions/"
-    fi
-  fi
-  if [ -f /run/host-secrets/gitconfig ]; then
-    sudo cp /run/host-secrets/gitconfig /home/claude/.gitconfig
-    sudo chown claude:claude /home/claude/.gitconfig
-    sudo chmod 644 /home/claude/.gitconfig
-    echo "    Copied ~/.gitconfig"
-  fi
-' 2>&1 || echo "    WARNING: credential copy failed — you may need to run claude login manually"
-
-# Run post-create.sh — prefer workspace copy so edits take effect without rebuild,
-# fall back to the image-baked copy if the workspace isn't mounted yet.
-container exec "${CONTAINER_NAME}" bash -c '
-  SCRIPT=/workspace/.devcontainer/scripts/post-create.sh
-  [ -f "$SCRIPT" ] || SCRIPT=$HOME/.devcontainer/post-create.sh
-  bash "$SCRIPT"
-' 2>&1 || echo "    WARNING: post-create.sh failed — check container logs"
+# Run the same post-create.sh that WSL2 uses. On macOS the host-secrets files
+# are owned by UID 501, so post-create.sh uses the container user (UID 1000)
+# which can read them via the read-only mount and copy to writable locations.
+echo "==> Running post-create setup..."
+container exec "${CONTAINER_NAME}" \
+  bash /workspace/.devcontainer/scripts/post-create.sh \
+  2>&1 || echo "    WARNING: post-create.sh failed — check container logs"
 
 echo ""
 echo "Container '${CONTAINER_NAME}' is running."
