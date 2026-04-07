@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "claude-code-container",
+  "description": "Isolated, cross-platform Claude Code development container",
+  "version": "1.0.0",
+  "variables": {
+    "project_name": {
+      "description": "Name of the project (used in container name, image tag, README)",
+      "type": "string",
+      "default": "my-project",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "primary_language": {
+      "description": "Primary programming language/runtime",
+      "type": "string",
+      "enum": ["node", "python", "rust", "go", "java", "dotnet", "none"],
+      "default": "node"
+    },
+    "extra_packages": {
+      "description": "Additional apt packages to install in the container",
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "vscode_extensions": {
+      "description": "Additional VS Code extension IDs",
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "forwarded_ports": {
+      "description": "Ports to forward from the container",
+      "type": "array",
+      "items": { "type": "integer" },
+      "default": []
+    },
+    "claude_code_version": {
+      "description": "Claude Code npm version (use 'latest' for most recent)",
+      "type": "string",
+      "default": "latest"
+    }
+  },
+  "files_to_update": [
+    "README.md",
+    "Makefile",
+    ".devcontainer/devcontainer.json",
+    ".devcontainer/Containerfile",
+    ".claude/CLAUDE.md"
+  ],
+  "post_init": "template/hooks/post-init.sh"
+}

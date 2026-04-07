@@ -1,1 +1,48 @@
+# macOS
 .DS_Store
+._*
+
+# Editors
+*.swp
+*.swo
+*~
+.idea/
+*.iml
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Build artifacts
+*.o
+*.so
+*.dylib
+dist/
+build/
+out/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Container artifacts
+*.tar
+*.oci
+
+# Backup files from sed/template init
+*.bak
+
+# Claude Code local state (auth is on host, not in repo)
+.claude.json
