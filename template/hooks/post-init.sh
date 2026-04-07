@@ -127,7 +127,16 @@ EOF
     echo "    Added .NET to Containerfile"
     ;;
   node)
-    echo "    Node.js already included in base image"
+    cat >> "${REPO_ROOT}/.devcontainer/Containerfile" <<'EOF'
+
+# ── Node.js 22 LTS (added by template init) ──────────────────────────────────
+USER root
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+USER claude
+EOF
+    echo "    Added Node.js to Containerfile"
     ;;
   none|"")
     echo "    No additional language runtime"
@@ -142,8 +151,9 @@ mkdir -p "${REPO_ROOT}/src"
 echo "# ${PROJECT_NAME}" > "${REPO_ROOT}/src/.gitkeep"
 
 # ── Update tests to include language checks ──────────────────────────────────
-if [[ "${PRIMARY_LANGUAGE}" != "none" && "${PRIMARY_LANGUAGE}" != "" && "${PRIMARY_LANGUAGE}" != "node" ]]; then
+if [[ "${PRIMARY_LANGUAGE}" != "none" && "${PRIMARY_LANGUAGE}" != "" ]]; then
   case "${PRIMARY_LANGUAGE}" in
+    node)   CHECK_CMD="node --version" ;;
     python) CHECK_CMD="python3 --version" ;;
     rust)   CHECK_CMD="rustc --version" ;;
     go)     CHECK_CMD="go version" ;;

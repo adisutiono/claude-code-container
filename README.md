@@ -117,7 +117,7 @@ Add port numbers to `forwardPorts` in `.devcontainer/devcontainer.json`.
 │       └── install.sh                # Installs Podman, configures subuid/gid, socket
 └── .devcontainer/
     ├── devcontainer.json             # VSCode Dev Containers config (WSL2 lifecycle + shared extensions)
-    ├── Containerfile                 # Ubuntu 24.04 + Node 22 + Claude Code + rootless Podman
+    ├── Containerfile                 # Ubuntu 25.10 + Claude Code (native) + rootless Podman
     ├── config/
     │   ├── containers.conf           # Podman engine config (cgroupfs, file events)
     │   └── storage.conf              # fuse-overlayfs storage driver for nested containers
