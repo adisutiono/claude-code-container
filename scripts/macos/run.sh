@@ -85,10 +85,13 @@ container exec "${CONTAINER_NAME}" bash -c '
   fi
 ' 2>&1 || echo "    WARNING: credential copy failed — you may need to run claude login manually"
 
-# Run post-create.sh from the workspace — same script as WSL2's postCreateCommand.
-# Running from /workspace means changes take effect without rebuilding the image.
-container exec "${CONTAINER_NAME}" bash /workspace/.devcontainer/scripts/post-create.sh \
-  2>&1 || echo "    WARNING: post-create.sh failed — check container logs"
+# Run post-create.sh — prefer workspace copy so edits take effect without rebuild,
+# fall back to the image-baked copy if the workspace isn't mounted yet.
+container exec "${CONTAINER_NAME}" bash -c '
+  SCRIPT=/workspace/.devcontainer/scripts/post-create.sh
+  [ -f "$SCRIPT" ] || SCRIPT=$HOME/.devcontainer/post-create.sh
+  bash "$SCRIPT"
+' 2>&1 || echo "    WARNING: post-create.sh failed — check container logs"
 
 echo ""
 echo "Container '${CONTAINER_NAME}' is running."

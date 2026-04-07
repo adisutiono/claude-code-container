@@ -121,4 +121,9 @@ COPY --chown=${USERNAME}:${USERNAME} \
     .devcontainer/config/storage.conf \
     /home/${USERNAME}/.config/containers/storage.conf
 
+COPY --chown=${USERNAME}:${USERNAME} \
+    .devcontainer/scripts/post-create.sh \
+    /home/${USERNAME}/.devcontainer/post-create.sh
+RUN chmod +x /home/${USERNAME}/.devcontainer/post-create.sh
+
 WORKDIR /workspace
