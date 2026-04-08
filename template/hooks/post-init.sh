@@ -185,9 +185,33 @@ machines and survives container rebuilds. A pre-commit hook scans for secrets.
 MEMEOF
 echo "    Cleared template memory files"
 
+# ── Replace template CLAUDE.md and settings with project versions ─────────
+# Template-development context (dual-platform architecture, credential flow, etc.)
+# is replaced with minimal project-appropriate versions.
+if [[ -f "${REPO_ROOT}/template/project-CLAUDE.md" ]]; then
+  sed "s/{{PROJECT_NAME}}/${PROJECT_NAME}/g" \
+    "${REPO_ROOT}/template/project-CLAUDE.md" > "${REPO_ROOT}/CLAUDE.md"
+  echo "    Replaced root CLAUDE.md with project version"
+fi
+
+if [[ -f "${REPO_ROOT}/template/project-claude-inner.md" ]]; then
+  sed "s/{{PROJECT_NAME}}/${PROJECT_NAME}/g" \
+    "${REPO_ROOT}/template/project-claude-inner.md" > "${REPO_ROOT}/.claude/CLAUDE.md"
+  echo "    Replaced .claude/CLAUDE.md with project version"
+fi
+
+if [[ -f "${REPO_ROOT}/template/project-settings.json" ]]; then
+  cp "${REPO_ROOT}/template/project-settings.json" "${REPO_ROOT}/.claude/settings.json"
+  echo "    Replaced settings.json with project version"
+fi
+
+# Remove template-only slash command
+rm -f "${REPO_ROOT}/.claude/commands/init-project.md"
+echo "    Removed init-project command (not needed after instantiation)"
+
 echo ""
 echo "Template initialised for '${PROJECT_NAME}'."
 echo "Next steps:"
-echo "  1. Update README.md with project-specific documentation"
+echo "  1. Review CLAUDE.md and update with project-specific context"
 echo "  2. Run 'make build' to build the container image"
 echo "  3. Remove the template/ directory when satisfied"

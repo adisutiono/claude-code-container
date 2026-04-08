@@ -132,6 +132,18 @@ This repo is a GitHub Template Repository. Two instantiation paths:
 
 `template/template.json` defines the full variable schema. `template/hooks/post-init.sh` performs substitutions across `Makefile`, `devcontainer.json`, `Containerfile`, and `tests/container-checks.sh`.
 
+### Context separation (template vs. project)
+
+The Claude Code config in this repo (`CLAUDE.md`, `.claude/CLAUDE.md`, `.claude/settings.json`, `.claude/memory/`) is specific to **template development**. On instantiation, `post-init.sh` replaces these with minimal project-appropriate versions from `template/`:
+
+| Template file | Project-starter file |
+|---|---|
+| `CLAUDE.md` | `template/project-CLAUDE.md` |
+| `.claude/CLAUDE.md` | `template/project-claude-inner.md` |
+| `.claude/settings.json` | `template/project-settings.json` |
+
+Memory files are cleared and the `/init-project` command is removed. Generic commands (`/improve-repo`, `/add-toolchain`, etc.) are preserved. See `docs/ARCHITECTURE.md` for the full separation design.
+
 ## Key documentation
 
 - `docs/ARCHITECTURE.md` — design principles, runtime models, credential flow diagrams
