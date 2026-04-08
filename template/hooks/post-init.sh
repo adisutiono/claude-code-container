@@ -170,6 +170,20 @@ check \"${PRIMARY_LANGUAGE} is installed\"         ${CHECK_CMD}" \
   fi
 fi
 
+# ── Broad name sweep ─────────────────────────────────────────────────────────
+# Replace any remaining 'claude-code-container' references with the project name.
+# Runs after the specific substitutions above so it catches anything not handled
+# explicitly (e.g. README.md). The template/ directory is excluded so the source
+# files used to drive this init are not rewritten.
+while IFS= read -r file; do
+  sed -i.bak "s|claude-code-container|${PROJECT_NAME}|g" "${file}"
+  rm -f "${file}.bak"
+done < <(grep -rl "claude-code-container" "${REPO_ROOT}" \
+  --exclude-dir=".git" \
+  --exclude-dir="template" \
+  2>/dev/null)
+echo "    Replaced remaining 'claude-code-container' references"
+
 # ── Clear template memory ─────────────────────────────────────────────────────
 # Memory files in .claude/memory/ are specific to this template repo's development.
 # Remove them so the new project starts with a clean slate.
