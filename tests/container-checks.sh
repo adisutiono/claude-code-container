@@ -14,7 +14,7 @@ check() {
     ((PASS++)) || true
   else
     echo "  FAIL  $desc"
-    echo "${output}" | sed 's/^/        /'
+    while IFS= read -r line; do echo "        ${line}"; done <<< "${output}"
     ((FAIL++)) || true
   fi
 }
@@ -53,7 +53,7 @@ else
   check "workspace .claude dir exists"     test -d "${PWD}/.claude"
   check "commands symlink is set up"       test -L "${HOME}/.claude/commands"
   check "settings.json symlink is set up"  test -L "${HOME}/.claude/settings.json"
-  check "memory symlink is set up"         test -L "${HOME}/.claude/projects/$(echo "${PWD}" | sed 's|/|-|g')/memory"
+  check "memory symlink is set up"         test -L "${HOME}/.claude/projects/${PWD//\//-}/memory"
   check "pre-commit hook installed"        test -x "${PWD}/.git/hooks/pre-commit"
 fi
 
