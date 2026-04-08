@@ -1,4 +1,4 @@
-.PHONY: setup build run stop status clean help
+.PHONY: setup build run stop status clean test-template help
 
 IMAGE_TAG        ?= claude-code-devcontainer:latest
 CONTAINER_NAME   ?= claude-code-env
@@ -79,6 +79,21 @@ clean:
 	else \
 		podman rmi $(IMAGE_TAG) 2>/dev/null && echo "Removed $(IMAGE_TAG)" || true; \
 	fi
+
+## test-template  Test template instantiation in an isolated temp directory
+test-template:
+	@set -e; \
+	TMPDIR=$$(mktemp -d); \
+	trap "rm -rf $$TMPDIR" EXIT; \
+	cp -r . $$TMPDIR/; \
+	cd $$TMPDIR; \
+	bash scripts/init-from-template.sh test-proj --language python; \
+	grep -q "test-proj" Makefile           && echo "  ✓ Makefile"; \
+	grep -q "test-proj" .devcontainer/devcontainer.json && echo "  ✓ devcontainer.json"; \
+	grep -q "test-proj" CLAUDE.md          && echo "  ✓ CLAUDE.md"; \
+	test ! -f .claude/commands/init-project.md && echo "  ✓ init-project removed"; \
+	test -f .claude/commands/improve-repo.md   && echo "  ✓ improve-repo preserved"; \
+	echo "Template test passed."
 
 ## help     Show available targets
 help:

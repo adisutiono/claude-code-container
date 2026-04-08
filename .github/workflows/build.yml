@@ -6,6 +6,34 @@ on:
   pull_request:
 
 jobs:
+  shellcheck:
+    name: Lint shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ShellCheck
+        run: |
+          sudo apt-get install -y shellcheck
+          find . -name "*.sh" -not -path "./.git/*" -exec shellcheck -x {} +
+
+  test-template:
+    name: Validate template instantiation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run init script and assert outputs
+        run: |
+          TMPDIR=$(mktemp -d)
+          cp -r . "$TMPDIR/"
+          cd "$TMPDIR"
+          bash scripts/init-from-template.sh test-proj --language python
+          grep -q "test-proj" Makefile
+          grep -q "test-proj" .devcontainer/devcontainer.json
+          grep -q "test-proj" CLAUDE.md
+          [[ ! -f .claude/commands/init-project.md ]]
+          [[ -f .claude/commands/improve-repo.md ]]
+          echo "Template instantiation test passed"
+
   build:
     name: Build image and run container checks (WSL2 / linux/amd64)
     runs-on: ubuntu-latest
