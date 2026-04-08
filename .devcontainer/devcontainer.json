@@ -19,6 +19,8 @@
   // --security-opt apparmor=unconfined → relaxes AppArmor profile on the WSL2 Linux host
   // --device /dev/fuse                 → enables fuse-overlayfs for nested Podman
   // --cap-add SYS_PTRACE               → needed by some debugging workloads Claude spawns
+  // --cap-add SETUID / SETGID          → required so newuidmap/newgidmap can setuid-map
+  //                                      UIDs/GIDs for nested Podman user namespaces
   "runArgs": [
     "--security-opt", "seccomp=unconfined",
     "--security-opt", "apparmor=unconfined",

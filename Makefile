@@ -88,11 +88,12 @@ test-template:
 	cp -r . $$TMPDIR/; \
 	cd $$TMPDIR; \
 	bash scripts/init-from-template.sh test-proj --language python; \
-	grep -q "test-proj" Makefile           && echo "  ✓ Makefile"; \
+	grep -q "test-proj" Makefile                      && echo "  ✓ Makefile"; \
 	grep -q "test-proj" .devcontainer/devcontainer.json && echo "  ✓ devcontainer.json"; \
-	grep -q "test-proj" CLAUDE.md          && echo "  ✓ CLAUDE.md"; \
-	test ! -f .claude/commands/init-project.md && echo "  ✓ init-project removed"; \
-	test -f .claude/commands/improve-repo.md   && echo "  ✓ improve-repo preserved"; \
+	grep -q "test-proj" CLAUDE.md                     && echo "  ✓ CLAUDE.md"; \
+	grep -q "test-proj" README.md                     && echo "  ✓ README.md (broad sweep)"; \
+	test ! -f .claude/commands/init-project.md        && echo "  ✓ init-project removed"; \
+	test -f .claude/commands/improve-repo.md          && echo "  ✓ improve-repo preserved"; \
 	echo "Template test passed."
 
 ## help     Show available targets

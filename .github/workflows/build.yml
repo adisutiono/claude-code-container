@@ -30,6 +30,7 @@ jobs:
           grep -q "test-proj" Makefile
           grep -q "test-proj" .devcontainer/devcontainer.json
           grep -q "test-proj" CLAUDE.md
+          grep -q "test-proj" README.md
           [[ ! -f .claude/commands/init-project.md ]]
           [[ -f .claude/commands/improve-repo.md ]]
           echo "Template instantiation test passed"

@@ -69,7 +69,7 @@ container the workspace path is `/workspaces/<project-name>`, so the project dir
 `run.sh` (macOS) creates a symlink:
 
 ```
-~/.claude/projects/-workspace/memory/ → /workspace/.claude/memory/
+~/.claude/projects/-workspaces-<project-name>/memory/ → /workspaces/<project-name>/.claude/memory/
 ```
 
 This means memory files land in the git workspace. They are committed to the repo,
