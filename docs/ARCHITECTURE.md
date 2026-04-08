@@ -105,3 +105,33 @@ This repo serves as a GitHub Template Repository. After instantiation:
 2. `template/template.json` defines the variable schema.
 3. `template/hooks/post-init.sh` performs the substitutions.
 4. The `template/` directory can be removed after initialisation.
+
+### Context Separation
+
+The template repo carries rich Claude Code configuration for its own development (dual-platform
+architecture, credential flow, nested container internals). This context is irrelevant to
+instantiated projects, so `post-init.sh` swaps it out:
+
+```
+Template repo (development)              Instantiated project
+─────────────────────────────            ─────────────────────
+CLAUDE.md (140 lines)              →     template/project-CLAUDE.md (~38 lines)
+.claude/CLAUDE.md (106 lines)      →     template/project-claude-inner.md (~50 lines)
+.claude/settings.json (model+deny) →     template/project-settings.json (generic)
+.claude/memory/*.md                →     cleared (blank MEMORY.md index)
+.claude/commands/init-project.md   →     removed
+```
+
+The swap uses the same pattern as memory cleanup: project-starter files live in `template/`
+and are installed by `sed` substitution (replacing `{{PROJECT_NAME}}`). Generic slash commands
+(`/improve-repo`, `/add-toolchain`, `/audit-security`, `/update-deps`) are preserved.
+
+**To modify the project-starter context**, edit the files in `template/`:
+- `template/project-CLAUDE.md` — root CLAUDE.md for new projects
+- `template/project-claude-inner.md` — `.claude/CLAUDE.md` for new projects
+- `template/project-settings.json` — `.claude/settings.json` for new projects
+
+**To modify the template's own context**, edit the files in place:
+- `CLAUDE.md` — root CLAUDE.md (this repo's development context)
+- `.claude/CLAUDE.md` — project intelligence for template development
+- `.claude/settings.json` — tool permissions for template development

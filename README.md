@@ -102,12 +102,39 @@ Add port numbers to `forwardPorts` in `.devcontainer/devcontainer.json`.
 
 ---
 
+## Claude Code configuration
+
+The `.claude/` directory contains Claude Code's runtime configuration: tool permissions, slash commands, memory files, and project intelligence (`CLAUDE.md`). These are symlinked into `~/.claude/` at container start so edits take effect immediately.
+
+### Template vs. project context
+
+This repo is both a GitHub template and an active project. The Claude Code configuration files in the repo contain detailed template-development context (dual-platform architecture, credential flow, nested container internals). When you instantiate a new project from this template, that context is **automatically replaced** with minimal, project-appropriate versions:
+
+| File | Template version | After instantiation |
+|---|---|---|
+| `CLAUDE.md` | Full architecture docs (~140 lines) | Project overview + commands (~38 lines) |
+| `.claude/CLAUDE.md` | Template intelligence (~106 lines) | Coding conventions + permissions (~50 lines) |
+| `.claude/settings.json` | Template-dev permissions + `model: opus` | Generic permissions, no model lock |
+| `.claude/memory/` | Template project context | Cleared (blank slate) |
+| `.claude/commands/init-project.md` | Present | Removed (not needed post-init) |
+
+Generic slash commands (`/improve-repo`, `/add-toolchain`, `/audit-security`, `/update-deps`) are preserved — they work for any container-based project.
+
+The project-starter versions live in `template/` (`project-CLAUDE.md`, `project-claude-inner.md`, `project-settings.json`) and are installed by `template/hooks/post-init.sh` during instantiation.
+
+### Memory persistence
+
+Claude Code memory is committed to `.claude/memory/` so context survives container rebuilds and travels across machines. A pre-commit hook scans memory files for secrets and blocks the commit if any are found. **Never store credentials in memory files.**
+
+---
+
 ## Project structure
 
 ```
 .
 ├── setup.sh                          # Bootstrap: detects OS, installs runtime
 ├── Makefile                          # build / run / stop / status / clean
+├── CLAUDE.md                         # Claude Code context (template version)
 ├── scripts/
 │   ├── detect-os.sh                  # Exports $DETECTED_OS (macos | wsl2)
 │   ├── macos/
@@ -115,6 +142,17 @@ Add port numbers to `forwardPorts` in `.devcontainer/devcontainer.json`.
 │   │   └── run.sh                    # Starts the container (apple/container run)
 │   └── wsl2/
 │       └── install.sh                # Installs Podman, configures subuid/gid, socket
+├── .claude/
+│   ├── CLAUDE.md                     # Claude Code project intelligence (template version)
+│   ├── settings.json                 # Tool permissions (template version)
+│   ├── memory/                       # Persistent context (committed to git)
+│   └── commands/                     # Slash commands (/improve-repo, /add-toolchain, etc.)
+├── template/
+│   ├── template.json                 # Variable schema for template instantiation
+│   ├── hooks/post-init.sh            # Runs on instantiation: renames, swaps config
+│   ├── project-CLAUDE.md             # Root CLAUDE.md installed in new projects
+│   ├── project-claude-inner.md       # .claude/CLAUDE.md installed in new projects
+│   └── project-settings.json         # .claude/settings.json installed in new projects
 └── .devcontainer/
     ├── devcontainer.json             # VSCode Dev Containers config (WSL2 lifecycle + shared extensions)
     ├── Containerfile                 # Ubuntu 25.10 + Claude Code (native) + rootless Podman

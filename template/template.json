@@ -45,7 +45,9 @@
     "Makefile",
     ".devcontainer/devcontainer.json",
     ".devcontainer/Containerfile",
-    ".claude/CLAUDE.md"
+    "CLAUDE.md",
+    ".claude/CLAUDE.md",
+    ".claude/settings.json"
   ],
   "post_init": "template/hooks/post-init.sh"
 }

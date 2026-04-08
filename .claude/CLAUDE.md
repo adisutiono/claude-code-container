@@ -103,3 +103,14 @@ When this repo is used as a template, the following can be customised:
 - Claude Code permission scope
 
 See `template/template.json` for the full variable schema.
+
+## Context Separation (Template vs. Project)
+
+This repo's Claude Code config (`CLAUDE.md`, `.claude/CLAUDE.md`, `.claude/settings.json`, `.claude/memory/`) is specific to **template development**. On instantiation, `post-init.sh` swaps these with minimal project-starter versions from `template/`.
+
+When editing Claude Code configuration, be aware of which context you're changing:
+
+- **Template context** (this repo's development): edit `CLAUDE.md`, `.claude/CLAUDE.md`, `.claude/settings.json` directly
+- **Project-starter context** (what new projects get): edit `template/project-CLAUDE.md`, `template/project-claude-inner.md`, `template/project-settings.json`
+
+Changes to template context do NOT propagate to instantiated projects and vice versa.
