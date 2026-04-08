@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y \
     lsb-release \
     nano \
     podman \
+    shellcheck \
     slirp4netns \
     sudo \
     uidmap \

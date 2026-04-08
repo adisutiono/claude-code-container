@@ -13,13 +13,11 @@ if [[ -f /run/host-secrets/claude.json ]]; then
 fi
 
 if [[ -d /run/host-secrets/claude-dir ]]; then
-  for f in .credentials.json; do
-    if [[ -f "/run/host-secrets/claude-dir/$f" ]]; then
-      cp "/run/host-secrets/claude-dir/$f" "$HOME/.claude/$f"
-      chmod 600 "$HOME/.claude/$f"
-      echo "    Copied ~/.claude/$f"
-    fi
-  done
+  if [[ -f "/run/host-secrets/claude-dir/.credentials.json" ]]; then
+    cp "/run/host-secrets/claude-dir/.credentials.json" "$HOME/.claude/.credentials.json"
+    chmod 600 "$HOME/.claude/.credentials.json"
+    echo "    Copied ~/.claude/.credentials.json"
+  fi
   if [[ -d /run/host-secrets/claude-dir/sessions ]]; then
     cp -r /run/host-secrets/claude-dir/sessions "$HOME/.claude/"
     echo "    Copied ~/.claude/sessions/"
@@ -61,7 +59,7 @@ fi
 
 # Claude Code derives its project dir from the workspace path:
 # /workspaces/my-project → ~/.claude/projects/-workspaces-my-project/
-PROJ_NAME=$(echo "${WORKSPACE_ROOT}" | sed 's|/|-|g')
+PROJ_NAME="${WORKSPACE_ROOT//\//-}"
 PROJ_DIR="${HOME}/.claude/projects/${PROJ_NAME}"
 if [[ -d "${WORKSPACE_CLAUDE}/memory" ]]; then
   mkdir -p "${PROJ_DIR}"
