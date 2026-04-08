@@ -111,9 +111,9 @@ The repo's `.claude/` directory is the live config for Claude Code inside the co
 
 | `~/.claude/` path | Source |
 |---|---|
-| `commands/` | `/workspace/.claude/commands/` (slash commands) |
-| `settings.json` | `/workspace/.claude/settings.json` (permissions) |
-| `projects/-workspace/memory/` | `/workspace/.claude/memory/` (portable memory) |
+| `commands/` | `<workspaceFolder>/.claude/commands/` (slash commands) |
+| `settings.json` | `<workspaceFolder>/.claude/settings.json` (permissions) |
+| `projects/<proj>/memory/` | `<workspaceFolder>/.claude/memory/` (portable memory) |
 
 This means edits to `.claude/` in the repo take effect immediately without rebuild.
 

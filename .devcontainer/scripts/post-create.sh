@@ -34,8 +34,10 @@ fi
 
 # ── Wire workspace .claude/ config into ~/.claude/ ───────────────────────────
 # Claude Code reads commands, settings, and memory from ~/.claude/ — not from
-# /workspace/.claude/. Symlink so the repo-committed config is the live config.
-WORKSPACE_CLAUDE="/workspace/.claude"
+# the workspace .claude/. Symlink so the repo-committed config is the live config.
+# $PWD is the workspaceFolder set by devcontainer.json (e.g. /workspaces/my-project).
+WORKSPACE_ROOT="${PWD}"
+WORKSPACE_CLAUDE="${WORKSPACE_ROOT}/.claude"
 
 if [[ -d "${WORKSPACE_CLAUDE}/commands" ]]; then
   rm -rf "${HOME}/.claude/commands"
@@ -49,19 +51,22 @@ if [[ -f "${WORKSPACE_CLAUDE}/settings.json" ]]; then
   echo "    Linked ~/.claude/settings.json → workspace"
 fi
 
-PROJ_DIR="${HOME}/.claude/projects/-workspace"
+# Claude Code derives its project dir from the workspace path:
+# /workspaces/my-project → ~/.claude/projects/-workspaces-my-project/
+PROJ_NAME=$(echo "${WORKSPACE_ROOT}" | sed 's|/|-|g')
+PROJ_DIR="${HOME}/.claude/projects/${PROJ_NAME}"
 if [[ -d "${WORKSPACE_CLAUDE}/memory" ]]; then
   mkdir -p "${PROJ_DIR}"
   if [[ -d "${PROJ_DIR}/memory" && ! -L "${PROJ_DIR}/memory" ]]; then
     rm -rf "${PROJ_DIR}/memory"
   fi
   ln -sfn "${WORKSPACE_CLAUDE}/memory" "${PROJ_DIR}/memory"
-  echo "    Linked ~/.claude/projects/-workspace/memory → workspace"
+  echo "    Linked ~/.claude/projects/${PROJ_NAME}/memory → workspace"
 fi
 
 # ── Install pre-commit hook for secret scanning ─────────────────────────────
-if [[ -d /workspace/.git && -f /workspace/scripts/hooks/pre-commit ]]; then
-  ln -sf ../../scripts/hooks/pre-commit /workspace/.git/hooks/pre-commit
+if [[ -d "${WORKSPACE_ROOT}/.git" && -f "${WORKSPACE_ROOT}/scripts/hooks/pre-commit" ]]; then
+  ln -sf ../../scripts/hooks/pre-commit "${WORKSPACE_ROOT}/.git/hooks/pre-commit"
   echo "    Installed pre-commit hook (secret scanning)"
 fi
 

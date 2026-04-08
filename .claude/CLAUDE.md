@@ -40,13 +40,13 @@ docs/                 → Architecture docs, sandbox model, conventions
 - **Shell scripts**: `bash`, `set -euo pipefail`, ShellCheck clean. Use `#!/usr/bin/env bash`.
 - **Comments**: Explain *why*, not *what*. Every non-obvious decision gets a comment.
 - **Makefile**: GNU Make compatible (no `!=` operator — macOS ships Make 3.81).
-- **Container paths**: credentials in `/run/host-secrets/`, workspace at `/workspace`.
+- **Container paths**: credentials in `/run/host-secrets/`, workspace at `/workspaces/<project-name>`.
 - **No hardcoded usernames**: Use `${USERNAME}` build arg or `$(whoami)` at runtime.
 
 ## What Claude Code Should and Should Not Do
 
 ### Safe to modify
-- Files under `src/` or `/workspace` (project code in instantiated repos)
+- Files under `src/` or the workspace folder (project code in instantiated repos)
 - Documentation in `docs/`
 - Test scripts in `tests/`
 - `.claude/commands/` slash command definitions
@@ -69,7 +69,7 @@ docs/                 → Architecture docs, sandbox model, conventions
 
 Memory files are committed to the repo at `.claude/memory/` so context is portable
 across machines and survives container rebuilds. At container start, a symlink wires
-`~/.claude/projects/-workspace/memory/` → `/workspace/.claude/memory/` so Claude Code's
+`~/.claude/projects/<proj>/memory/` → `<workspaceFolder>/.claude/memory/` so Claude Code's
 runtime writes land directly in the workspace.
 
 **CRITICAL: Never store secrets in memory files.** Memory files are committed to git.

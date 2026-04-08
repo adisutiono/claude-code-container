@@ -28,7 +28,7 @@ This document describes the isolation boundaries for the Claude Code container e
 
 ## What the Container CAN Do
 
-- Read and write files under `/workspace`
+- Read and write files under `/workspaces/<project-name>`
 - Execute Claude Code and any tools it invokes
 - Spawn nested containers via rootless Podman
 - Access the network (outbound, via NAT / slirp4netns)

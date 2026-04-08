@@ -42,21 +42,25 @@ fi
 
 # apple/container does not support --interactive/--tty on detached containers.
 # sleep infinity keeps the VM alive so VSCode can attach to it.
+# On macOS, mount the workspace to /workspaces/<basename> to match the WSL2
+# Dev Containers default and keep paths consistent across platforms.
+WORKSPACE_NAME="$(basename "${WORKSPACE}")"
+CONTAINER_WORKSPACE="/workspaces/${WORKSPACE_NAME}"
+
 container run \
   --name "${CONTAINER_NAME}" \
   --detach \
-  --volume "${WORKSPACE}:/workspace" \
+  --volume "${WORKSPACE}:${CONTAINER_WORKSPACE}" \
   "${EXTRA_VOLUMES[@]}" \
   "${IMAGE_TAG}" \
   sleep infinity
 
 # postCreateCommand does not run in the macOS attach model.
-# Run the same post-create.sh that WSL2 uses. On macOS the host-secrets files
-# are owned by UID 501, so post-create.sh uses the container user (UID 1000)
-# which can read them via the read-only mount and copy to writable locations.
+# Run post-create.sh from the workspace with CWD set to the workspace folder,
+# mirroring how devcontainer.json invokes it on WSL2.
 echo "==> Running post-create setup..."
-container exec "${CONTAINER_NAME}" \
-  bash /workspace/.devcontainer/scripts/post-create.sh \
+container exec --workdir "${CONTAINER_WORKSPACE}" "${CONTAINER_NAME}" \
+  bash .devcontainer/scripts/post-create.sh \
   2>&1 || echo "    WARNING: post-create.sh failed — check container logs"
 
 echo ""

@@ -50,11 +50,11 @@ if [ "${CI:-false}" = "true" ]; then
   echo "  SKIP  memory symlink target is correct (post-create.sh not run in CI)"
   echo "  SKIP  pre-commit hook installed (post-create.sh not run in CI)"
 else
-  check "workspace .claude dir exists"     test -d /workspace/.claude
+  check "workspace .claude dir exists"     test -d "${PWD}/.claude"
   check "commands symlink is set up"       test -L "${HOME}/.claude/commands"
   check "settings.json symlink is set up"  test -L "${HOME}/.claude/settings.json"
-  check "memory symlink is set up"         test -L "${HOME}/.claude/projects/-workspace/memory"
-  check "pre-commit hook installed"        test -x /workspace/.git/hooks/pre-commit
+  check "memory symlink is set up"         test -L "${HOME}/.claude/projects/$(echo "${PWD}" | sed 's|/|-|g')/memory"
+  check "pre-commit hook installed"        test -x "${PWD}/.git/hooks/pre-commit"
 fi
 
 # ── Nested container smoke test ───────────────────────────────────────────────

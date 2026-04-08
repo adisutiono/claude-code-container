@@ -30,7 +30,7 @@
   ],
 
   "remoteUser": "claude",
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
   "customizations": {
     "vscode": {
@@ -55,7 +55,9 @@
   // credentials don't exist yet on the host machine.
   "initializeCommand": "bash -c '[ -f \"${HOME}/.claude.json\" ] || echo \"{}\" > \"${HOME}/.claude.json\"; [ -d \"${HOME}/.claude\" ] || mkdir -p \"${HOME}/.claude\"; [ -d \"${HOME}/.config/gh\" ] || mkdir -p \"${HOME}/.config/gh\"; [ -f \"${HOME}/.gitconfig\" ] || touch \"${HOME}/.gitconfig\"'",
 
-  "postCreateCommand": "bash /workspace/.devcontainer/scripts/post-create.sh",
+  // postCreateCommand CWD is workspaceFolder, so relative path works here
+  // and avoids hardcoding /workspace vs /workspaces/<name>.
+  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
 
   // Mount host Claude credentials so Claude Code is already authenticated.
   // Individual files are staged into /run/host-secrets/ (directory mount, more

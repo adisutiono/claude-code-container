@@ -64,8 +64,8 @@ The inner Podman is configured for rootless operation inside an already-namespac
 ## Context Persistence
 
 Claude Code writes project memory to `~/.claude/projects/<path>/memory/`. Inside the
-container the workspace path is `/workspace`, so the project directory is
-`~/.claude/projects/-workspace/`. At container start, `post-create.sh` (WSL2) or
+container the workspace path is `/workspaces/<project-name>`, so the project directory is
+`~/.claude/projects/-workspaces-<project-name>/`. At container start, `post-create.sh` (WSL2) or
 `run.sh` (macOS) creates a symlink:
 
 ```

@@ -20,13 +20,14 @@ Key decisions made during development — do not change without discussion:
 4. **runArgs for WSL2 nested containers**: must include `--device /dev/net/tun`,
    `--cap-add SETUID`, `--cap-add SETGID` in addition to seccomp/apparmor opts.
 
-5. **Memory in git** (`.claude/memory/`): symlinked from `~/.claude/projects/-workspace/memory/`
-   so Claude Code writes land in the workspace and get committed.
-   Pre-commit hook scans for secrets.
+5. **Memory in git** (`.claude/memory/`): symlinked from `~/.claude/projects/-workspaces-<name>/memory/`
+   (path derived dynamically from `$PWD` in post-create.sh) so Claude Code writes land in the
+   workspace and get committed. Pre-commit hook scans for secrets.
 
 6. **macOS attach model gap**: `postCreateCommand` does NOT run on macOS — all lifecycle
-   steps (credential copy, symlink setup, Podman init) must be duplicated in `run.sh`
-   via `container exec`.
+   steps (credential copy, symlink setup, Podman init) run via `container exec` in `run.sh`.
+   Workspace is mounted to `/workspaces/<name>` to match WSL2 Dev Containers default.
+   `container exec --workdir` sets CWD so `post-create.sh` uses `$PWD` correctly.
 
 **How to apply:** Before any change, check if it affects both platforms. If touching
 credential flow or container lifecycle, update both devcontainer.json and run.sh.

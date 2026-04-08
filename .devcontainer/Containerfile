@@ -78,8 +78,8 @@ RUN mkdir /commandhistory \
 
 # Create workspace and .claude directories as root before user switch.
 # /run/host-secrets is the mount target for read-only host credential files.
-RUN mkdir -p /workspace /home/${USERNAME}/.claude /run/host-secrets \
-    && chown -R ${USERNAME}:${USERNAME} /workspace /home/${USERNAME}/.claude \
+RUN mkdir -p /home/${USERNAME}/.claude /run/host-secrets \
+    && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.claude \
     && chmod 755 /run/host-secrets
 
 USER ${USERNAME}
@@ -126,4 +126,4 @@ COPY --chown=${USERNAME}:${USERNAME} \
     /home/${USERNAME}/.devcontainer/post-create.sh
 RUN chmod +x /home/${USERNAME}/.devcontainer/post-create.sh
 
-WORKDIR /workspace
+WORKDIR /workspaces
