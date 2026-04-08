@@ -1,6 +1,9 @@
 # TARGETPLATFORM is set by --platform at build time (linux/arm64 on macOS, linux/amd64 on WSL2).
 # Declaring it here makes the platform explicit and surfaces mismatches early.
 ARG TARGETPLATFORM
+# ubuntu:25.10 (Oracular Oriole) is intentionally non-LTS — it ships a newer Podman
+# than 24.04 LTS, which avoids rootless user-namespace regressions present in older builds.
+# Trade-off: 9-month support window instead of 5 years. Re-evaluate on each Ubuntu LTS release.
 FROM --platform=${TARGETPLATFORM} ubuntu:25.10
 
 ARG USERNAME=claude

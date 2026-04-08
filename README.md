@@ -137,6 +137,8 @@ Claude Code memory is committed to `.claude/memory/` so context survives contain
 ├── CLAUDE.md                         # Claude Code context (template version)
 ├── scripts/
 │   ├── detect-os.sh                  # Exports $DETECTED_OS (macos | wsl2)
+│   ├── hooks/
+│   │   └── pre-commit                # Secret scanner: blocks commits with credentials in memory files
 │   ├── macos/
 │   │   ├── install.sh                # Installs apple/container, patches VSCode settings
 │   │   └── run.sh                    # Starts the container (apple/container run)

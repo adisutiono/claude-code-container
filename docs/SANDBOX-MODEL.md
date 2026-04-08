@@ -14,7 +14,7 @@ This document describes the isolation boundaries for the Claude Code container e
 │  └── Credential files (read-only mount)         │
 ├─────────────────────────────────────────────────┤
 │ Outer container (semi-trusted)                  │
-│  ├── /workspace (read-write, project files)     │
+│  ├── /workspaces/<project-name> (read-write)    │
 │  ├── Claude Code (native binary)                │
 │  ├── Git operations (within /workspace)         │
 │  └── Podman (rootless, nested containers)       │
