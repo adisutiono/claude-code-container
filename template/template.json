@@ -33,11 +33,6 @@
       "type": "array",
       "items": { "type": "integer" },
       "default": []
-    },
-    "claude_code_version": {
-      "description": "Claude Code npm version (use 'latest' for most recent)",
-      "type": "string",
-      "default": "latest"
     }
   },
   "files_to_update": [

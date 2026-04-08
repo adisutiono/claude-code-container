@@ -28,9 +28,17 @@ fi
 
 if [[ -f /run/host-secrets/gitconfig ]]; then
   cp /run/host-secrets/gitconfig "$HOME/.gitconfig"
-  chmod 644 "$HOME/.gitconfig"
+  chmod 600 "$HOME/.gitconfig"
   echo "    Copied ~/.gitconfig"
 fi
+
+# ── Shadow /run/host-secrets/ after copy ─────────────────────────────────────
+# Credentials have been copied to writable locations. The read-only mount is no
+# longer needed — shadow it with an empty tmpfs so the originals can't be read
+# by a compromised subprocess for the remainder of the container's lifetime.
+sudo mount -t tmpfs -o size=4k,noexec,nosuid,nodev tmpfs /run/host-secrets 2>/dev/null \
+  && echo "    Shadowed /run/host-secrets/ (credentials already copied)" \
+  || echo "    Note: could not shadow /run/host-secrets/ (non-critical)"
 
 # ── Wire workspace .claude/ config into ~/.claude/ ───────────────────────────
 # Claude Code reads commands, settings, and memory from ~/.claude/ — not from
@@ -66,7 +74,9 @@ fi
 
 # ── Install pre-commit hook for secret scanning ─────────────────────────────
 if [[ -d "${WORKSPACE_ROOT}/.git" && -f "${WORKSPACE_ROOT}/scripts/hooks/pre-commit" ]]; then
+  mkdir -p "${WORKSPACE_ROOT}/.git/hooks"
   ln -sf ../../scripts/hooks/pre-commit "${WORKSPACE_ROOT}/.git/hooks/pre-commit"
+  chmod +x "${WORKSPACE_ROOT}/scripts/hooks/pre-commit"
   echo "    Installed pre-commit hook (secret scanning)"
 fi
 

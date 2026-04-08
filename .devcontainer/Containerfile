@@ -80,7 +80,8 @@ RUN mkdir /commandhistory \
 # /run/host-secrets is the mount target for read-only host credential files.
 RUN mkdir -p /home/${USERNAME}/.claude /run/host-secrets \
     && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.claude \
-    && chmod 755 /run/host-secrets
+    && chown ${USERNAME}:${USERNAME} /run/host-secrets \
+    && chmod 700 /run/host-secrets
 
 USER ${USERNAME}
 
