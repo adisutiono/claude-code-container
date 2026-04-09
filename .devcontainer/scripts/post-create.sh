@@ -30,13 +30,19 @@ if [[ -f /run/host-secrets/gitconfig ]]; then
   echo "    Copied ~/.gitconfig"
 fi
 
-# ── Shadow /run/host-secrets/ after copy ─────────────────────────────────────
-# Credentials have been copied to writable locations. The read-only mount is no
-# longer needed — shadow it with an empty tmpfs so the originals can't be read
-# by a compromised subprocess for the remainder of the container's lifetime.
-sudo mount -t tmpfs -o size=4k,noexec,nosuid,nodev tmpfs /run/host-secrets 2>/dev/null \
-  && echo "    Shadowed /run/host-secrets/ (credentials already copied)" \
-  || echo "    Note: could not shadow /run/host-secrets/ (non-critical)"
+# ── Start credential watcher ─────────────────────────────────────────────────
+# Watch /run/host-secrets/ for changes and auto-copy updated credentials.
+# This replaces the old tmpfs-shadow approach so credentials stay fresh when
+# the host refreshes tokens (e.g. Claude auth rotation).
+# Try workspace copy first (latest), fall back to image-bundled copy.
+WATCHER_SCRIPT="${WORKSPACE_ROOT:-.}/.devcontainer/scripts/credential-watcher.sh"
+[[ -x "${WATCHER_SCRIPT}" ]] || WATCHER_SCRIPT="${HOME}/.devcontainer/credential-watcher.sh"
+if [[ -x "${WATCHER_SCRIPT}" ]] && command -v inotifywait &>/dev/null; then
+  nohup bash "${WATCHER_SCRIPT}" >> /tmp/credential-watcher.log 2>&1 &
+  echo "    Started credential watcher (PID $!, log: /tmp/credential-watcher.log)"
+else
+  echo "    Note: credential watcher not started (inotifywait or script not found)"
+fi
 
 # ── Wire workspace .claude/ config into ~/.claude/ ───────────────────────────
 # Claude Code reads commands, settings, and memory from ~/.claude/ — not from
