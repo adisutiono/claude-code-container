@@ -10,6 +10,50 @@ schema_version: 1
 Append-only log of findings from `/improve-repo` and `/audit-security` runs.
 Entries are prepended (newest first).
 
+## 2026-04-09 — /audit-security
+
+**Findings:** 6 (0 critical, 1 medium, 3 low, 2 info)
+**Branch:** — (findings only; no code changes proposed yet)
+**Status:** proposed
+
+### Finding: SEC-001 — /dev/net/tun runArg wrong comment, may be unnecessary
+- **Severity:** MEDIUM
+- **Category:** security
+- **Description:** Comment says `/dev/net/tun` "enables fuse-overlayfs" — incorrect. slirp4netns (configured in containers.conf) doesn't need this device. May be unnecessary; misleads maintainers.
+- **Resolution:** Removed from devcontainer.json runArgs and post-create.sh. Added comment explaining slirp4netns doesn't need it. Fixed architecture_decisions.md.
+
+### Finding: SEC-002 — zsh-in-docker script not SHA-verified
+- **Severity:** LOW
+- **Category:** security
+- **Description:** GitHub release script piped to `sh` without checksum verification at build time.
+- **Resolution:** —
+
+### Finding: SEC-003 — GitHub CLI keyring not SHA-pinned
+- **Severity:** LOW
+- **Category:** security
+- **Description:** Keyring fetched over HTTPS without SHA verification of keyring file itself.
+- **Resolution:** —
+
+### Finding: SEC-004 — Claude Code install script unverified
+- **Severity:** LOW
+- **Category:** security
+- **Description:** `curl | bash` without script integrity check. Binary SHA-verified by the script; script itself is not.
+- **Resolution:** —
+
+### Finding: SEC-005 — sessions/ cp does not preserve permissions
+- **Severity:** INFO
+- **Category:** security
+- **Description:** `cp -r` without `-p` gives session files container-default umask.
+- **Resolution:** —
+
+### Finding: SEC-006 — SYS_PTRACE on outer container
+- **Severity:** INFO
+- **Category:** security
+- **Description:** Intentional and documented. Accepted — appropriate for a dev environment. Not inherited by nested containers.
+- **Resolution:** Accepted.
+
+---
+
 ## 2026-04-09 — /improve-repo
 
 **Findings:** 4 (0 critical, 2 recommended, 2 nice-to-have)
