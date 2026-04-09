@@ -1,0 +1,53 @@
+name: Sync knowledge base on PR merge
+
+# Triggers when a PR is closed (merged or declined) against main.
+# Updates the matching audit-log.md entry status so the knowledge base
+# stays current without manual intervention.
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+# Needs write access to commit the audit-log update back to main.
+permissions:
+  contents: write
+
+jobs:
+  sync-knowledge:
+    name: Update audit-log status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Check out main (post-merge state), not the PR branch.
+          ref: main
+
+      - name: Determine new status
+        id: status
+        run: |
+          if [[ "${{ github.event.pull_request.merged }}" == "true" ]]; then
+            echo "value=merged" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=declined" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update audit-log entry
+        id: update
+        run: |
+          BRANCH="${{ github.event.pull_request.head.ref }}"
+          STATUS="${{ steps.status.outputs.value }}"
+          echo "Branch: ${BRANCH} → ${STATUS}"
+          if bash scripts/sync-knowledge.sh "${BRANCH}" "${STATUS}"; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit audit-log update
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .knowledge/audit-log.md
+          git commit -m "chore: mark ${{ github.event.pull_request.head.ref }} as ${{ steps.status.outputs.value }} in audit-log [skip ci]"
+          git push
