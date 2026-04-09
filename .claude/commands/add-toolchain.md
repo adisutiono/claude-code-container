@@ -25,6 +25,10 @@ Ask the user:
 
 5. **Verify cross-platform**: Ensure the packages are available on both `linux/arm64` (macOS) and `linux/amd64` (WSL2) architectures.
 
+## Knowledge Integration
+
+After adding the toolchain, **prepend** an entry to `.knowledge/toolchain-history.md` recording what was added, version, files modified, and any extensions. Follow the entry template in the file.
+
 ## Do NOT
 
 - Remove existing tools unless asked

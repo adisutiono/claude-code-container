@@ -2,6 +2,13 @@
 
 Perform a security audit of the container environment and configuration.
 
+## Knowledge Integration
+
+Before auditing, read `.knowledge/security-findings.md` and `.knowledge/audit-log.md`:
+- **Check** if previously identified issues have been resolved — update their status to `mitigated` with the resolution date.
+- **Skip** findings already tracked in `audit-log.md` by `/improve-repo` to avoid duplicates.
+- After completing the audit, **prepend** new findings to `.knowledge/security-findings.md` with status `open`. Also **prepend** a summary entry to `.knowledge/audit-log.md`. Follow the entry templates in each file.
+
 ## Check These Areas
 
 1. **Container permissions**

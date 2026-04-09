@@ -32,7 +32,9 @@
       "Edit(.claude/commands/**)",
       "Write(src/**)",
       "Write(docs/**)",
-      "Write(tests/**)"
+      "Write(tests/**)",
+      "Edit(.knowledge/**)",
+      "Write(.knowledge/**)"
     ],
     "deny": [
       "Bash(git push --force*)",

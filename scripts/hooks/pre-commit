@@ -3,8 +3,8 @@
 # Install: ln -sf ../../scripts/hooks/pre-commit .git/hooks/pre-commit
 set -euo pipefail
 
-# Only check staged memory files
-MEMORY_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '^\.claude/memory/' || true)
+# Check staged memory and knowledge files
+MEMORY_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(\.claude/memory/|\.knowledge/)' || true)
 
 if [[ -z "${MEMORY_FILES}" ]]; then
   exit 0

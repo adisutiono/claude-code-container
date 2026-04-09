@@ -199,6 +199,25 @@ machines and survives container rebuilds. A pre-commit hook scans for secrets.
 MEMEOF
 echo "    Cleared template memory files"
 
+# ── Reset knowledge base ──────────────────────────────────────────────────────
+# Knowledge files in .knowledge/ are specific to this template repo's development.
+# Reset them to empty starters so the new project starts with a clean slate.
+for kfile in audit-log dependency-manifest security-findings toolchain-history; do
+  cat > "${REPO_ROOT}/.knowledge/${kfile}.md" <<KEOF
+---
+type: knowledge
+category: ${kfile}
+last_updated: $(date +%Y-%m-%d)
+schema_version: 1
+---
+
+# ${kfile//-/ }
+
+<!-- Entries will be added by slash commands. See .knowledge/README.md for format. -->
+KEOF
+done
+echo "    Reset knowledge base files"
+
 # ── Replace template CLAUDE.md and settings with project versions ─────────
 # Template-development context (dual-platform architecture, credential flow, etc.)
 # is replaced with minimal project-appropriate versions.

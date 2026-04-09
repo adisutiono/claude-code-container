@@ -2,6 +2,13 @@
 
 Audit the repository and propose improvements. Follow this checklist:
 
+## Knowledge Integration
+
+Before auditing, read `.knowledge/audit-log.md` to review previous findings:
+- **Skip** re-reporting issues that are already tracked and unresolved (status: `proposed`).
+- **Note** if a previously declined finding recurs — mention it but do not re-propose.
+- After completing the audit, **prepend** new findings to `.knowledge/audit-log.md` with the date, branch name, severity, and status `proposed`. Follow the entry template in the file.
+
 ## Audit Steps
 
 1. **Containerfile health**

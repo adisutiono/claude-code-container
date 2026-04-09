@@ -30,7 +30,9 @@ Edit `.devcontainer/Containerfile` and run `make build`. The Containerfile is st
 
 Claude Code memory is committed to the repo at `.claude/memory/`. A symlink wires the runtime memory directory to the workspace so writes persist across container rebuilds.
 
-**Never store secrets in memory files.** Memory files are committed to git. A pre-commit hook scans for common secret patterns and blocks the commit if any are found.
+The `.knowledge/` directory holds structured findings from the self-improvement loop (`/improve-repo`, `/audit-security`, `/update-deps`, `/add-toolchain`). Commands read existing knowledge before auditing and write findings back after completing.
+
+**Never store secrets in memory or knowledge files.** These files are committed to git. A pre-commit hook scans for common secret patterns and blocks the commit if any are found.
 
 ## Key Documentation
 
