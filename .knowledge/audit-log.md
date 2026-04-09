@@ -58,7 +58,7 @@ Entries are prepended (newest first).
 
 **Findings:** 4 (0 critical, 2 recommended, 2 nice-to-have)
 **Branch:** improve/2026-04-09
-**Status:** proposed
+**Status:** merged
 
 ### Finding: CI template test missing .knowledge/ assertions
 - **Severity:** recommended
