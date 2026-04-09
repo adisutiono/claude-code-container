@@ -19,6 +19,7 @@
 - Documentation in `docs/`
 - Test scripts in `tests/`
 - `.claude/commands/` slash command definitions
+- `.knowledge/` knowledge base files
 - `.gitignore`, `.editorconfig`
 
 ### Modify with care (explain reasoning)
@@ -31,6 +32,12 @@
 - `.devcontainer/config/containers.conf` — Podman engine config, security-sensitive
 - `.devcontainer/config/storage.conf` — storage driver config
 - Security-related `runArgs` in `devcontainer.json`
+
+## Knowledge Base
+
+The `.knowledge/` directory holds structured findings from the self-improvement
+slash commands. Commands read existing knowledge before auditing (to avoid duplicate
+work) and write findings back after completing. See `.knowledge/README.md` for format.
 
 ## Memory Persistence
 

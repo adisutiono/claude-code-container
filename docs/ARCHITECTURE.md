@@ -93,6 +93,18 @@ post-create.sh symlinks    post-create.sh symlinks
 Claude Code reads memory   Claude Code reads memory
 ```
 
+### Knowledge base (`.knowledge/`)
+
+The self-improvement slash commands persist structured findings in `.knowledge/`.
+Unlike memory (per-user session context), knowledge is cumulative loop output:
+audit findings, dependency state, security finding lifecycle, toolchain change records.
+
+Commands read existing knowledge before auditing (to skip known issues) and write
+findings back after completing (to build institutional knowledge). On template
+instantiation, `post-init.sh` resets knowledge files to empty starters.
+
+The pre-commit hook scans `.knowledge/` for secret patterns alongside `.claude/memory/`.
+
 ## Security Model
 
 See [SANDBOX-MODEL.md](SANDBOX-MODEL.md) for the full isolation and threat model.
@@ -119,6 +131,7 @@ CLAUDE.md (140 lines)              →     template/project-CLAUDE.md (~38 lines
 .claude/CLAUDE.md (106 lines)      →     template/project-claude-inner.md (~50 lines)
 .claude/settings.json (model+deny) →     template/project-settings.json (generic)
 .claude/memory/*.md                →     cleared (blank MEMORY.md index)
+.knowledge/*.md                    →     reset to empty starters
 .claude/commands/init-project.md   →     removed
 ```
 

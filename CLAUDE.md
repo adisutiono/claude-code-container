@@ -105,6 +105,19 @@ Claude Code's tool permissions are encoded in `.claude/settings.json` using tool
 
 The slash commands above form a closed loop: `/improve-repo` audits the full repo, `/update-deps` keeps dependencies current, `/audit-security` verifies isolation, and `/add-toolchain` extends capabilities. Findings are proposed as branches, never committed directly to main. The `.github/ISSUE_TEMPLATE/claude-improvement.md` template provides a structured format for tracking AI-proposed changes.
 
+### Knowledge base (`.knowledge/`)
+
+The self-improvement commands read and write structured findings to `.knowledge/`:
+
+| File | Owner command(s) | Content |
+|---|---|---|
+| `audit-log.md` | `/improve-repo`, `/audit-security` | Cumulative audit findings |
+| `dependency-manifest.md` | `/update-deps` | Dependency versions and update status |
+| `security-findings.md` | `/audit-security` | Security findings with lifecycle tracking |
+| `toolchain-history.md` | `/add-toolchain` | Record of toolchain changes |
+
+Commands read existing knowledge before auditing (avoid duplicate work) and write findings back after completing (build institutional knowledge). The pre-commit hook scans `.knowledge/` for secrets, same as `.claude/memory/`.
+
 ## Claude Code config wiring
 
 The repo's `.claude/` directory is the live config for Claude Code inside the container. At container start, `post-create.sh` (WSL2) / `run.sh` (macOS) creates symlinks:

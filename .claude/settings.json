@@ -14,6 +14,9 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git push origin *)",
+      "Bash(gh issue:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr:*)",
       "Bash(npm install*)",
       "Bash(npm test*)",
       "Bash(pip install*)",
@@ -33,7 +36,9 @@
       "Edit(.claude/commands/**)",
       "Write(src/**)",
       "Write(docs/**)",
-      "Write(tests/**)"
+      "Write(tests/**)",
+      "Edit(.knowledge/**)",
+      "Write(.knowledge/**)"
     ],
     "deny": [
       "Bash(make run*)",
@@ -46,5 +51,6 @@
       "Edit(scripts/macos/*)",
       "Edit(scripts/wsl2/*)"
     ]
-  }
+  },
+  "model": "opus"
 }

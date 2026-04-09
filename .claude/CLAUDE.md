@@ -20,6 +20,7 @@ When someone instantiates this template, they get a ready-to-use Claude Code dev
 .claude/              → Claude Code configuration and slash commands (this layer)
 .devcontainer/        → Container definition, configs, lifecycle scripts
 .github/              → CI workflows, issue templates
+.knowledge/           → Structured findings from the self-improvement loop
 .vscode/              → Editor settings and extension recommendations
 scripts/              → Platform-specific installers and runtime scripts
 template/             → Template instantiation config and hooks
@@ -50,6 +51,7 @@ docs/                 → Architecture docs, sandbox model, conventions
 - Documentation in `docs/`
 - Test scripts in `tests/`
 - `.claude/commands/` slash command definitions
+- `.knowledge/` knowledge base files
 - `.gitignore`, `.editorconfig`
 
 ### Modify with care (explain reasoning)
@@ -82,6 +84,18 @@ When saving memories, focus on:
 - Architectural decisions and their rationale
 - Project context and goals
 - Feedback on approaches (what worked, what didn't)
+
+## Knowledge Base
+
+The `.knowledge/` directory holds structured findings produced and consumed by the
+self-improvement slash commands. Unlike `docs/` (human-facing) or `.claude/memory/`
+(per-user session context), `.knowledge/` is the loop's cumulative working memory.
+
+Commands read existing knowledge before auditing (to skip known issues and avoid
+duplicate work) and write findings back after completing (to build institutional
+knowledge). See `.knowledge/README.md` for the file format and conventions.
+
+The pre-commit hook scans `.knowledge/` for secret patterns, same as `.claude/memory/`.
 
 ## Self-Improvement Guidelines
 

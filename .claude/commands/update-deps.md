@@ -2,6 +2,13 @@
 
 Check for and propose dependency updates across the container stack.
 
+## Knowledge Integration
+
+Before checking, read `.knowledge/dependency-manifest.md`:
+- **Review** last check dates and known versions to avoid redundant work.
+- **Carry forward** deferred updates with their reasons.
+- After completing the check, **update** the dependency table and deferred updates section in `.knowledge/dependency-manifest.md`. Follow the format documented in the file.
+
 ## What to Check
 
 1. **Base image**: Is there a newer Ubuntu LTS or point release?
