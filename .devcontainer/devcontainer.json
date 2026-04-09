@@ -17,15 +17,18 @@
   //
   // --security-opt seccomp=unconfined  → allows clone(2)/unshare(2) for user namespaces
   // --security-opt apparmor=unconfined → relaxes AppArmor profile on the WSL2 Linux host
-  // --device /dev/fuse                 → enables fuse-overlayfs for nested Podman
+  // --device /dev/fuse                 → enables fuse-overlayfs for nested Podman storage
   // --cap-add SYS_PTRACE               → needed by some debugging workloads Claude spawns
   // --cap-add SETUID / SETGID          → required so newuidmap/newgidmap can setuid-map
   //                                      UIDs/GIDs for nested Podman user namespaces
+  //
+  // Note: /dev/net/tun is intentionally absent. Nested containers use slirp4netns for
+  // networking — a userspace implementation that does not require the tun kernel device.
+  // (pasta, the Podman 5.x default, would need /dev/net/tun; slirp4netns does not.)
   "runArgs": [
     "--security-opt", "seccomp=unconfined",
     "--security-opt", "apparmor=unconfined",
     "--device", "/dev/fuse",
-    "--device", "/dev/net/tun",
     "--cap-add", "SYS_PTRACE",
     "--cap-add", "SETUID",
     "--cap-add", "SETGID"

@@ -87,7 +87,6 @@ fi
 # ── Podman / nested container setup ──────────────────────────────────────────
 sudo mount --make-rshared / 2>/dev/null || true
 sudo chmod 666 /dev/fuse     2>/dev/null || true
-sudo chmod 666 /dev/net/tun 2>/dev/null || true
 podman system migrate 2>/dev/null || true
 
 echo "==> Verifying nested container support..."
