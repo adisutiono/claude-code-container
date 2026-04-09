@@ -61,11 +61,14 @@ This document describes the isolation boundaries for the Claude Code container e
 1. Host credentials are created by the user (e.g., `claude login`, `gh auth login`)
 2. At container start, credentials are mounted read-only into `/run/host-secrets/`
 3. `postCreateCommand` / `run.sh` copies them to writable locations
-4. Claude Code uses the writable copies (it needs write access for token refresh)
-5. On container stop, writable copies are destroyed (container is ephemeral)
-6. Token refresh writes go to the container-local copy, NOT back to the host
+4. A background credential watcher (`inotifywait`) monitors `/run/host-secrets/` for changes and auto-copies updated credentials into the container
+5. Claude Code uses the writable copies (it needs write access for token refresh)
+6. On container stop, writable copies are destroyed (container is ephemeral)
+7. Token refresh writes go to the container-local copy, NOT back to the host
 
-**Implication**: If Claude Code refreshes its auth token inside the container, the refreshed token is lost on container restart. The user may need to re-authenticate. This is a deliberate trade-off for security.
+**Credential auto-refresh**: When the host rotates credentials (e.g., Claude auth token refresh), the `inotifywait`-based watcher detects the change and copies the updated file into `~/.claude/`. Log output goes to `/tmp/credential-watcher.log` inside the container.
+
+**Implication**: Container-side token refreshes are still lost on restart. Host-side refreshes are now picked up automatically.
 
 ## Extending the Sandbox
 

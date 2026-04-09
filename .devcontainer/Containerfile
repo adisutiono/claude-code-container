@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y \
     fuse-overlayfs \
     fzf \
     git \
+    inotify-tools \
     gnupg \
     jq \
     less \
@@ -129,6 +130,12 @@ COPY --chown=${USERNAME}:${USERNAME} \
 COPY --chown=${USERNAME}:${USERNAME} \
     .devcontainer/scripts/post-create.sh \
     /home/${USERNAME}/.devcontainer/post-create.sh
-RUN chmod +x /home/${USERNAME}/.devcontainer/post-create.sh
+
+COPY --chown=${USERNAME}:${USERNAME} \
+    .devcontainer/scripts/credential-watcher.sh \
+    /home/${USERNAME}/.devcontainer/credential-watcher.sh
+
+RUN chmod +x /home/${USERNAME}/.devcontainer/post-create.sh \
+    /home/${USERNAME}/.devcontainer/credential-watcher.sh
 
 WORKDIR /workspaces

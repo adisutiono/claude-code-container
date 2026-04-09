@@ -25,6 +25,7 @@ check "claude is installed"            claude --version
 check "podman is installed"            podman --version
 check "fuse-overlayfs is present"      command -v fuse-overlayfs
 check "slirp4netns is present"         command -v slirp4netns
+check "inotifywait is present"         command -v inotifywait
 check "newuidmap is present"           command -v newuidmap
 check "newgidmap is present"           command -v newgidmap
 
