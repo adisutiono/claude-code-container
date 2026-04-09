@@ -44,5 +44,9 @@
     ".claude/CLAUDE.md",
     ".claude/settings.json"
   ],
+  "notes": {
+    "knowledge_base": ".knowledge/ files are reset to empty starters by post-init.sh (not via sed substitution — no {{PROJECT_NAME}} variables)",
+    "memory": ".claude/memory/ files are cleared to a blank MEMORY.md index by post-init.sh"
+  },
   "post_init": "template/hooks/post-init.sh"
 }
