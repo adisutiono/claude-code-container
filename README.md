@@ -117,14 +117,19 @@ This repo is both a GitHub template and an active project. The Claude Code confi
 | `.claude/settings.json` | Template-dev permissions + `model: opus` | Generic permissions, no model lock |
 | `.claude/memory/` | Template project context | Cleared (blank slate) |
 | `.claude/commands/init-project.md` | Present | Removed (not needed post-init) |
+| `.knowledge/*.md` | Template findings | Reset to empty starters |
 
 Generic slash commands (`/improve-repo`, `/add-toolchain`, `/audit-security`, `/update-deps`) are preserved — they work for any container-based project.
 
 The project-starter versions live in `template/` (`project-CLAUDE.md`, `project-claude-inner.md`, `project-settings.json`) and are installed by `template/hooks/post-init.sh` during instantiation.
 
-### Memory persistence
+### Memory and knowledge persistence
 
-Claude Code memory is committed to `.claude/memory/` so context survives container rebuilds and travels across machines. A pre-commit hook scans memory files for secrets and blocks the commit if any are found. **Never store credentials in memory files.**
+Claude Code memory is committed to `.claude/memory/` so context survives container rebuilds and travels across machines.
+
+The `.knowledge/` directory stores structured findings from the self-improvement loop. The slash commands (`/improve-repo`, `/audit-security`, `/update-deps`, `/add-toolchain`) read existing knowledge before auditing — skipping already-known issues — and write findings back after completing, building institutional knowledge across sessions.
+
+A pre-commit hook scans both `.claude/memory/` and `.knowledge/` for secrets and blocks the commit if any are found. **Never store credentials in these files.**
 
 ---
 
@@ -138,7 +143,7 @@ Claude Code memory is committed to `.claude/memory/` so context survives contain
 ├── scripts/
 │   ├── detect-os.sh                  # Exports $DETECTED_OS (macos | wsl2)
 │   ├── hooks/
-│   │   └── pre-commit                # Secret scanner: blocks commits with credentials in memory files
+│   │   └── pre-commit                # Secret scanner: blocks commits with credentials in memory/knowledge files
 │   ├── macos/
 │   │   ├── install.sh                # Installs apple/container, patches VSCode settings
 │   │   └── run.sh                    # Starts the container (apple/container run)
@@ -147,11 +152,17 @@ Claude Code memory is committed to `.claude/memory/` so context survives contain
 ├── .claude/
 │   ├── CLAUDE.md                     # Claude Code project intelligence (template version)
 │   ├── settings.json                 # Tool permissions (template version)
-│   ├── memory/                       # Persistent context (committed to git)
+│   ├── memory/                       # Persistent session context (committed to git)
 │   └── commands/                     # Slash commands (/improve-repo, /add-toolchain, etc.)
+├── .knowledge/
+│   ├── README.md                     # Schema and conventions for knowledge files
+│   ├── audit-log.md                  # Cumulative findings from /improve-repo and /audit-security
+│   ├── dependency-manifest.md        # Tracked dependency versions (maintained by /update-deps)
+│   ├── security-findings.md          # Security findings with lifecycle tracking
+│   └── toolchain-history.md          # Record of toolchain additions (/add-toolchain)
 ├── template/
 │   ├── template.json                 # Variable schema for template instantiation
-│   ├── hooks/post-init.sh            # Runs on instantiation: renames, swaps config
+│   ├── hooks/post-init.sh            # Runs on instantiation: renames, swaps config, resets knowledge
 │   ├── project-CLAUDE.md             # Root CLAUDE.md installed in new projects
 │   ├── project-claude-inner.md       # .claude/CLAUDE.md installed in new projects
 │   └── project-settings.json         # .claude/settings.json installed in new projects
@@ -162,7 +173,8 @@ Claude Code memory is committed to `.claude/memory/` so context survives contain
     │   ├── containers.conf           # Podman engine config (cgroupfs, file events)
     │   └── storage.conf              # fuse-overlayfs storage driver for nested containers
     └── scripts/
-        └── post-create.sh            # Smoke-tests nested container support on first open
+        ├── post-create.sh            # Copies credentials, wires .claude/ symlinks, starts credential watcher
+        └── credential-watcher.sh     # Watches /run/host-secrets/ and auto-copies updated credentials
 ```
 
 ---

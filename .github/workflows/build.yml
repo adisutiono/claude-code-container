@@ -33,6 +33,10 @@ jobs:
           grep -q "test-proj" README.md
           [[ ! -f .claude/commands/init-project.md ]]
           [[ -f .claude/commands/improve-repo.md ]]
+          [[ -f .knowledge/audit-log.md ]]
+          [[ -f .knowledge/dependency-manifest.md ]]
+          [[ -f .knowledge/security-findings.md ]]
+          [[ -f .knowledge/toolchain-history.md ]]
           echo "Template instantiation test passed"
 
   build:
