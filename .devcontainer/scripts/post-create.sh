@@ -22,6 +22,13 @@ if [[ -d /run/host-secrets/claude-dir ]]; then
     chmod 600 "$HOME/.claude/.credentials.json"
     echo "    Copied ~/.claude/.credentials.json"
   fi
+  # If the host exported Keychain credentials, use them (overrides empty file copy).
+  # This handles macOS where Claude Code stores tokens in the Keychain, not on disk.
+  if [[ -f "$HOME/.claude/.devcontainer-credentials.json" ]]; then
+    mv "$HOME/.claude/.devcontainer-credentials.json" "$HOME/.claude/.credentials.json"
+    chmod 600 "$HOME/.claude/.credentials.json"
+    echo "    Applied Keychain-exported Claude credentials"
+  fi
   if [[ -d /run/host-secrets/claude-dir/sessions ]]; then
     sudo cp -r /run/host-secrets/claude-dir/sessions "$HOME/.claude/"
     sudo chown -R "$(id -u):$(id -g)" "$HOME/.claude/sessions"
@@ -108,10 +115,12 @@ fi
 
 # ── Fix workspace file permissions ───────────────────────────────────────────
 # On virtiofs mounts (Podman on macOS), the host UID maps to root inside the
-# container. chown fails on virtiofs, but chmod works. Make the workspace and
-# .git writable so the container user can edit files and use git.
+# container. chown fails on virtiofs, but chmod works. Make the entire workspace
+# writable so the container user can edit all files and use git.
+# Run chmod on all non-writable files/dirs — not just a subset.
 if [[ -d "${WORKSPACE_ROOT}" ]]; then
-  sudo find "${WORKSPACE_ROOT}" -not -writable -exec chmod a+w {} + 2>/dev/null || true
+  sudo chmod -R a+w "${WORKSPACE_ROOT}" 2>/dev/null || \
+    sudo find "${WORKSPACE_ROOT}" -not -writable -exec chmod a+w {} + 2>/dev/null || true
   echo "    Fixed workspace file permissions"
 fi
 

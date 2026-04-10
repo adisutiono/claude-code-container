@@ -58,6 +58,8 @@ Host credentials are bind-mounted read-only into `/run/host-secrets/` and then c
 
 Host-mounted files may be owned by a different UID (e.g. root) with mode 600. `post-create.sh` uses `sudo cp` + `chown` to handle this.
 
+On macOS, Claude Code and GitHub CLI may store tokens in the system Keychain instead of on disk. `initialize-host.sh` (runs on the host via `initializeCommand`) extracts these tokens into staging files before container creation. `post-create.sh` detects staging files and moves them into the container's writable credential locations. Set `CLAUDE_KEYCHAIN_SERVICE` to override the Keychain service name if needed.
+
 ### Nested container support
 
 Rootless Podman inside the devcontainer enables Claude Code to spawn containers at runtime. Key pieces:
