@@ -23,6 +23,7 @@
   // networking — a userspace implementation that does not require the tun kernel device.
   // (pasta, the Podman 5.x default, would need /dev/net/tun; slirp4netns does not.)
   "runArgs": [
+    "--userns=keep-id:uid=1000,gid=1000",
     "--security-opt", "seccomp=unconfined",
     "--security-opt", "apparmor=unconfined",
     "--device", "/dev/fuse",
