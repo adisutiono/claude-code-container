@@ -32,7 +32,16 @@ fi
 if [[ -d /run/host-secrets/gh ]]; then
   sudo cp -r /run/host-secrets/gh/. "$HOME/.config/gh/"
   sudo chown -R "$(id -u):$(id -g)" "$HOME/.config/gh"
-  echo "    Copied ~/.config/gh/"
+
+  # If the host exported a token-bearing staging file, use it as hosts.yml.
+  # This handles macOS where gh stores tokens in the Keychain (not in hosts.yml).
+  if [[ -f "$HOME/.config/gh/.devcontainer-hosts.yml" ]]; then
+    mv "$HOME/.config/gh/.devcontainer-hosts.yml" "$HOME/.config/gh/hosts.yml"
+    chmod 600 "$HOME/.config/gh/hosts.yml"
+    echo "    Copied ~/.config/gh/ (with exported token)"
+  else
+    echo "    Copied ~/.config/gh/"
+  fi
 fi
 
 if [[ -f /run/host-secrets/gitconfig ]]; then
@@ -95,6 +104,15 @@ if [[ -d "${WORKSPACE_ROOT}/.git" && -f "${WORKSPACE_ROOT}/scripts/hooks/pre-com
   ln -s ../../scripts/hooks/pre-commit "${WORKSPACE_ROOT}/.git/hooks/pre-commit"
   chmod +x "${WORKSPACE_ROOT}/scripts/hooks/pre-commit"
   echo "    Installed pre-commit hook (secret scanning)"
+fi
+
+# ── Fix workspace file permissions ───────────────────────────────────────────
+# On virtiofs mounts (Podman on macOS), the host UID maps to root inside the
+# container. chown fails on virtiofs, but chmod works. Make the workspace and
+# .git writable so the container user can edit files and use git.
+if [[ -d "${WORKSPACE_ROOT}" ]]; then
+  sudo find "${WORKSPACE_ROOT}" -not -writable -exec chmod a+w {} + 2>/dev/null || true
+  echo "    Fixed workspace file permissions"
 fi
 
 # ── Podman / nested container setup ──────────────────────────────────────────
