@@ -75,11 +75,11 @@ else
   check "CLAUDE.md is writable"                  test -w "${PWD}/CLAUDE.md"
 
   # Credential dirs must be writable for token refresh
-  check "~/.config/gh dir is writable"           test -w "${HOME}/.config/gh"
-  check "~/.claude dir is writable"              test -w "${HOME}/.claude"
+  check "$HOME/.config/gh dir is writable"       test -w "${HOME}/.config/gh"
+  check "$HOME/.claude dir is writable"          test -w "${HOME}/.claude"
 
   # Verify we can actually create and remove a file (not just stat-based check)
-  check "can create file in workspace" bash -c 'f="${PWD}/.permission-test-$$"; touch "$f" && rm "$f"'
+  check "can create file in workspace" bash -c "f=\"\${PWD}/.permission-test-\$\$\"; touch \"\$f\" && rm \"\$f\""
   check "can create git branch" bash -c 'git branch __permission-test 2>/dev/null && git branch -d __permission-test >/dev/null 2>&1'
 fi
 
@@ -88,8 +88,8 @@ echo "==> Claude Code credentials"
 if [ "${CI:-false}" = "true" ]; then
   echo "  SKIP  claude credentials (not configured in CI)"
 else
-  check "~/.claude.json exists"                test -f "${HOME}/.claude.json"
-  check "~/.claude/.credentials.json exists"   test -f "${HOME}/.claude/.credentials.json"
+  check "$HOME/.claude.json exists"             test -f "${HOME}/.claude.json"
+  check "$HOME/.claude/.credentials.json exists" test -f "${HOME}/.claude/.credentials.json"
   check ".credentials.json is non-empty"       test -s "${HOME}/.claude/.credentials.json"
 fi
 
