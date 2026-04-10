@@ -58,6 +58,42 @@ else
   check "pre-commit hook installed"        test -x "${PWD}/.git/hooks/pre-commit"
 fi
 
+# ── Workspace file permissions ────────────────────────────────────────────────
+# On virtiofs mounts (Podman on macOS), host files map as root inside the
+# container. post-create.sh fixes this, but we verify critical paths here.
+echo "==> Workspace file permissions"
+if [ "${CI:-false}" = "true" ]; then
+  echo "  SKIP  workspace permissions (workspace not mounted in CI)"
+else
+  # Files and dirs that must be writable for day-to-day development
+  check "workspace root is writable"             test -w "${PWD}"
+  check ".git dir is writable"                   test -w "${PWD}/.git"
+  check ".git/refs/heads is writable"            test -w "${PWD}/.git/refs/heads"
+  check ".devcontainer dir is writable"          test -w "${PWD}/.devcontainer"
+  check ".devcontainer/scripts dir is writable"  test -w "${PWD}/.devcontainer/scripts"
+  check "Makefile is writable"                   test -w "${PWD}/Makefile"
+  check "CLAUDE.md is writable"                  test -w "${PWD}/CLAUDE.md"
+
+  # Credential dirs must be writable for token refresh
+  check "~/.config/gh dir is writable"           test -w "${HOME}/.config/gh"
+  check "~/.claude dir is writable"              test -w "${HOME}/.claude"
+
+  # Verify we can actually create and remove a file (not just stat-based check)
+  check "can create file in workspace" bash -c 'f="${PWD}/.permission-test-$$"; touch "$f" && rm "$f"'
+  check "can create git branch" bash -c 'git branch __permission-test 2>/dev/null && git branch -d __permission-test >/dev/null 2>&1'
+fi
+
+# ── GitHub CLI authentication ────────────────────────────────────────────────
+echo "==> GitHub CLI"
+if [ "${CI:-false}" = "true" ]; then
+  echo "  SKIP  gh auth (not configured in CI)"
+else
+  check "gh is installed"                command -v gh
+  check "gh hosts.yml exists"            test -f "${HOME}/.config/gh/hosts.yml"
+  # Token presence check — don't validate against API (may be rate-limited)
+  check "gh hosts.yml contains token"    grep -q "oauth_token" "${HOME}/.config/gh/hosts.yml"
+fi
+
 # ── Nested container smoke test ───────────────────────────────────────────────
 # Skipped in CI: nested user namespaces require kernel-level support that
 # GitHub Actions standard runners do not provide (newuidmap cannot remap IDs
