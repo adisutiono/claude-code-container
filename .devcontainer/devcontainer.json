@@ -10,10 +10,7 @@
     }
   },
 
-  // runArgs apply on WSL2 (Podman devcontainer lifecycle) only.
-  // On macOS, apple/container uses the "Attach to Running Container" model —
-  // the container is started by `make run` (scripts/macos/run.sh) and VSCode
-  // attaches to it; these args are not used.
+  // Podman security and device flags for nested container support.
   //
   // --security-opt seccomp=unconfined  → allows clone(2)/unshare(2) for user namespaces
   // --security-opt apparmor=unconfined → relaxes AppArmor profile on the WSL2 Linux host

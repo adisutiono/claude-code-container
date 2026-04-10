@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This is a GitHub template for running Claude Code in an isolated container environment. It supports two platforms from a single codebase:
+This is a GitHub template for running Claude Code in an isolated container environment. It uses rootless Podman on all platforms:
 
-- **macOS 15+ (Apple Silicon)**: Uses `apple/container` (Virtualization.framework) — the container is a full Linux VM, so nested Podman has no restrictions.
-- **Windows WSL2**: Uses rootless Podman — nested containers require user namespace mappings and `fuse-overlayfs`.
+- **macOS (Apple Silicon)**: Podman Desktop or CLI — VS Code "Reopen in Container"
+- **Windows WSL2**: Podman native — VS Code "Reopen in Container"
 
 The OCI image is defined in `.devcontainer/Containerfile` (Ubuntu 25.10 + Claude Code native binary + rootless Podman). Node.js is not included by default — add it via `--language node` during template init or `/add-toolchain`.
 
@@ -20,16 +20,10 @@ bash setup.sh    # or: make setup
 # Build the container image
 make build
 
-# macOS: start container (then attach in VS Code)
-make run
-
-# macOS: stop container
-make stop
-
 # Show runtime and container state
 make status
 
-# Remove image (and stop container on macOS)
+# Remove image
 make clean
 
 # Run container checks (must be run inside the container)
@@ -39,32 +33,30 @@ bash tests/container-checks.sh
 bash scripts/init-from-template.sh <project-name> [--language python] [--extensions id1,id2] [--ports 3000,8080] [--packages pkg1,pkg2]
 ```
 
-CI builds via `podman build` with `--platform linux/amd64`; the macOS path uses `container build` with `--platform linux/arm64`.
+CI builds via `podman build` with `--platform linux/amd64`; macOS builds use `--platform linux/arm64`.
 
 ## Architecture
 
 ### Platform detection
 
-`scripts/detect-os.sh` exports `$DETECTED_OS` (`macos` or `wsl2`). The `Makefile` sources this at the top and branches all targets on `$(_OS)`.
+`scripts/detect-os.sh` exports `$DETECTED_OS` (`macos` or `wsl2`). The `Makefile` sources this at the top to select the correct `--platform` for builds.
 
-### Two launch models
+### Launch model
 
-**WSL2** — standard Dev Containers lifecycle: `devcontainer.json` controls `build`, `runArgs`, `postCreateCommand`, and volume `mounts`. VS Code's "Reopen in Container" handles everything.
-
-**macOS** — "attach" model: `make run` (`scripts/macos/run.sh`) starts the container with `apple/container run --detach … sleep infinity`, then VS Code attaches. Because `postCreateCommand` does not run in attach mode, `run.sh` manually copies credentials from `/run/host-secrets/` into the container after start.
+Both platforms use the standard Dev Containers lifecycle: `devcontainer.json` controls `build`, `runArgs`, `postCreateCommand`, and volume `mounts`. VS Code's "Reopen in Container" handles everything.
 
 ### Credential flow
 
-Host credentials are bind-mounted read-only into `/run/host-secrets/` and then copied to writable locations:
+Host credentials are bind-mounted read-only into `/run/host-secrets/` and then copied to writable locations by `post-create.sh`:
 
 | Source (host) | Staging mount | Writable destination |
 |---|---|---|
 | `~/.claude.json` | `/run/host-secrets/claude.json` | `~/.claude.json` |
-| `~/.claude/` | `/run/host-secrets/claude-dir` | `~/.claude/` (settings + sessions) |
+| `~/.claude/` | `/run/host-secrets/claude-dir` | `~/.claude/` (credentials + sessions) |
 | `~/.gitconfig` | `/run/host-secrets/gitconfig` | `~/.gitconfig` |
-| `~/.config/gh` | mounted directly | `~/.config/gh` (read-only) |
+| `~/.config/gh` | `/run/host-secrets/gh` | `~/.config/gh/` |
 
-On WSL2 this copy happens in `postCreateCommand` (in `devcontainer.json`). On macOS it happens in `scripts/macos/run.sh` via `container exec` as root, then chowned to `claude` (UID 1000).
+Host-mounted files may be owned by a different UID (e.g. root) with mode 600. `post-create.sh` uses `sudo cp` + `chown` to handle this.
 
 ### Nested container support
 
@@ -74,16 +66,12 @@ Rootless Podman inside the devcontainer enables Claude Code to spawn containers 
 - `newuidmap`/`newgidmap` are setuid root
 - `fuse-overlayfs` as the Podman storage driver (configured in `.devcontainer/config/storage.conf`)
 - `post-create.sh` runs `mount --make-rshared /` and `chmod 666 /dev/fuse` to allow bind-mount propagation
-- WSL2 `runArgs` in `devcontainer.json` add `--security-opt seccomp=unconfined`, `--security-opt apparmor=unconfined`, `--device /dev/fuse`
+- `runArgs` in `devcontainer.json` add `--security-opt seccomp=unconfined`, `--security-opt apparmor=unconfined`, `--device /dev/fuse`
 - CI skips the nested container smoke test (nested user namespaces not available on GitHub Actions standard runners)
 
 ### Adding tools to the image
 
 Edit `.devcontainer/Containerfile` and run `make build`. The Containerfile is structured with clearly commented sections for base packages, GitHub CLI, Node.js, Claude Code, and Podman config. Or use the `/add-toolchain` slash command for guided setup.
-
-### Customising macOS resource limits
-
-`scripts/macos/run.sh` accepts `CLAUDE_MACHINE_CPUS`, `CLAUDE_MACHINE_MEMORY`, etc. as environment variables passed to `container run`.
 
 ## Claude Code Configuration
 
@@ -120,7 +108,7 @@ Commands read existing knowledge before auditing (avoid duplicate work) and writ
 
 ## Claude Code config wiring
 
-The repo's `.claude/` directory is the live config for Claude Code inside the container. At container start, `post-create.sh` (WSL2) / `run.sh` (macOS) creates symlinks:
+The repo's `.claude/` directory is the live config for Claude Code inside the container. At container start, `post-create.sh` creates symlinks:
 
 | `~/.claude/` path | Source |
 |---|---|

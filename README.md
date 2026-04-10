@@ -6,8 +6,8 @@ A GitHub template for running [Claude Code](https://claude.ai/code) in an isolat
 
 | Platform | Runtime | VSCode connection |
 |---|---|---|
-| macOS 15+ | `apple/container` (Apple Virtualization.framework) | Attach to Running Apple Container |
-| Windows WSL2 | Podman (native Linux, rootless) | Reopen in Container |
+| macOS (Apple Silicon) | Podman (rootless) | Reopen in Container |
+| Windows WSL2 | Podman (rootless) | Reopen in Container |
 
 Both platforms use the same OCI image built from `.devcontainer/Containerfile`. Nested containers (spawned by Claude Code at runtime) run via rootless Podman inside the container — no privileged mode required.
 
@@ -16,8 +16,8 @@ Both platforms use the same OCI image built from `.devcontainer/Containerfile`. 
 ### macOS
 
 - macOS 15 (Sequoia) or later, Apple Silicon
+- [Podman Desktop](https://podman-desktop.io/) or Podman CLI (`brew install podman`)
 - [VS Code](https://code.visualstudio.com) with the [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension
-- Homebrew — installed automatically by `setup.sh` if missing
 
 ### Windows WSL2
 
@@ -48,7 +48,7 @@ bash setup.sh
 ```
 
 This detects your OS and:
-- **macOS** — installs `apple/container` via Homebrew, enables the experimental Apple Container support in VS Code
+- **macOS** — installs Podman if needed, configures the Podman machine
 - **WSL2** — installs Podman, configures user namespace mappings for nested containers, enables the Podman socket
 
 ### 3. Build the container image
@@ -59,14 +59,7 @@ make build
 
 ### 4. Start your environment
 
-**macOS:**
-```bash
-make run
-```
-Then in VS Code: `Command Palette (⇧⌘P)` → **"Dev Containers: Attach to Running Apple Container..."** → select `claude-code-env`.
-
-**WSL2:**
-Open this folder in VS Code and choose **"Reopen in Container"** when prompted, or run `Command Palette` → **"Dev Containers: Reopen in Container"**.
+Open this folder in VS Code and choose **"Reopen in Container"** when prompted, or run `Command Palette (⇧⌘P)` → **"Dev Containers: Reopen in Container"**.
 
 ---
 
@@ -74,11 +67,9 @@ Open this folder in VS Code and choose **"Reopen in Container"** when prompted, 
 
 | Command | Description |
 |---|---|
-| `make run` | (macOS) Start the container |
-| `make stop` | (macOS) Stop the container |
-| `make status` | Show runtime and container state |
 | `make build` | Rebuild the image after `Containerfile` changes |
-| `make clean` | Remove the image and stop the container |
+| `make status` | Show runtime and container state |
+| `make clean` | Remove the image |
 
 ---
 
@@ -87,10 +78,6 @@ Open this folder in VS Code and choose **"Reopen in Container"** when prompted, 
 ### Add tools to the image
 
 Edit `.devcontainer/Containerfile`. The key sections are clearly commented. Rebuild with `make build` after changes.
-
-### Change resource limits (macOS)
-
-`scripts/macos/run.sh` passes resource flags to `container run`. Edit `CLAUDE_MACHINE_CPUS`, `CLAUDE_MACHINE_MEMORY` etc. via environment variables or directly in the script.
 
 ### Add VS Code extensions
 
@@ -108,7 +95,7 @@ The `.claude/` directory contains Claude Code's runtime configuration: tool perm
 
 ### Template vs. project context
 
-This repo is both a GitHub template and an active project. The Claude Code configuration files in the repo contain detailed template-development context (dual-platform architecture, credential flow, nested container internals). When you instantiate a new project from this template, that context is **automatically replaced** with minimal, project-appropriate versions:
+This repo is both a GitHub template and an active project. The Claude Code configuration files in the repo contain detailed template-development context. When you instantiate a new project from this template, that context is **automatically replaced** with minimal, project-appropriate versions:
 
 | File | Template version | After instantiation |
 |---|---|---|
@@ -138,15 +125,12 @@ A pre-commit hook scans both `.claude/memory/` and `.knowledge/` for secrets and
 ```
 .
 ├── setup.sh                          # Bootstrap: detects OS, installs runtime
-├── Makefile                          # build / run / stop / status / clean
+├── Makefile                          # build / status / clean
 ├── CLAUDE.md                         # Claude Code context (template version)
 ├── scripts/
 │   ├── detect-os.sh                  # Exports $DETECTED_OS (macos | wsl2)
 │   ├── hooks/
-│   │   └── pre-commit                # Secret scanner: blocks commits with credentials in memory/knowledge files
-│   ├── macos/
-│   │   ├── install.sh                # Installs apple/container, patches VSCode settings
-│   │   └── run.sh                    # Starts the container (apple/container run)
+│   │   └── pre-commit                # Secret scanner: blocks commits with credentials
 │   └── wsl2/
 │       └── install.sh                # Installs Podman, configures subuid/gid, socket
 ├── .claude/
@@ -165,9 +149,9 @@ A pre-commit hook scans both `.claude/memory/` and `.knowledge/` for secrets and
 │   ├── hooks/post-init.sh            # Runs on instantiation: renames, swaps config, resets knowledge
 │   ├── project-CLAUDE.md             # Root CLAUDE.md installed in new projects
 │   ├── project-claude-inner.md       # .claude/CLAUDE.md installed in new projects
-│   └── project-settings.json         # .claude/settings.json installed in new projects
+│   └── project-settings.json        # .claude/settings.json installed in new projects
 └── .devcontainer/
-    ├── devcontainer.json             # VSCode Dev Containers config (WSL2 lifecycle + shared extensions)
+    ├── devcontainer.json             # VSCode Dev Containers config
     ├── Containerfile                 # Ubuntu 25.10 + Claude Code (native) + rootless Podman
     ├── config/
     │   ├── containers.conf           # Podman engine config (cgroupfs, file events)
@@ -183,8 +167,7 @@ A pre-commit hook scans both `.claude/memory/` and `.knowledge/` for secrets and
 
 Claude Code can spawn containers at runtime (e.g. to run sandboxed builds or tests). This is handled by rootless Podman installed inside the devcontainer image.
 
-- **macOS**: the outer container is a Linux VM (Virtualization.framework), so Podman runs inside a real Linux kernel — no restrictions.
-- **WSL2**: user namespace mappings (`/etc/subuid`, `/etc/subgid`) are configured by `setup.sh`, and `fuse-overlayfs` is used as the storage driver.
+User namespace mappings (`/etc/subuid`, `/etc/subgid`) are configured in the Containerfile, and `fuse-overlayfs` is used as the storage driver.
 
 No extra configuration is needed. The `post-create.sh` script runs a smoke test on first open to confirm nested containers are working.
 
@@ -192,11 +175,8 @@ No extra configuration is needed. The `post-create.sh` script runs a smoke test 
 
 ## Troubleshooting
 
-**`make build` fails on macOS with "command not found: container"**
-Run `make setup` first. If `apple/container` was just installed, open a new terminal so the PATH update takes effect.
-
-**VSCode doesn't show "Attach to Running Apple Container"**
-Check that `dev.containers.experimentalAppleContainerSupport` is `true` in your VS Code user settings. `setup.sh` sets this automatically, but it targets the stable VS Code build. If you use VS Code Insiders, re-run `setup.sh`.
+**`make build` fails with "command not found: podman"**
+Run `make setup` first. On macOS, install Podman via `brew install podman` or [Podman Desktop](https://podman-desktop.io/).
 
 **Nested container smoke test fails on WSL2**
 Verify `/etc/subuid` and `/etc/subgid` contain an entry for your user:

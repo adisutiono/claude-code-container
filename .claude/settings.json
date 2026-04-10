@@ -41,14 +41,11 @@
       "Write(.knowledge/**)"
     ],
     "deny": [
-      "Bash(make run*)",
-      "Bash(container run*)",
       "Bash(git push* main*)",
       "Bash(git push --force*)",
       "Bash(sudo *)",
       "Bash(rm -rf *)",
       "Edit(.devcontainer/config/*)",
-      "Edit(scripts/macos/*)",
       "Edit(scripts/wsl2/*)"
     ]
   },

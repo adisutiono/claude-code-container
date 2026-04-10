@@ -11,13 +11,14 @@ Key decisions made during development — do not change without discussion:
    Symlink `/usr/local/bin/claude` → `~/.local/bin/claude` so VS Code extension finds it.
 
 2. **Credential staging via `/run/host-secrets/`**: Host credentials are bind-mounted
-   read-only, then copied to writable locations by postCreateCommand/run.sh.
+   read-only, then copied to writable locations by postCreateCommand.
    Copies: `.credentials.json`, `settings.json`, `sessions/`.
+   Uses `sudo cp` + `chown` because host files may be owned by root with mode 600.
 
 3. **subuid/subgid range is 131072** (not 65536): avoids triple-mapping overlap bug
    where the third Podman namespace mapping wraps back to a duplicate host UID.
 
-4. **runArgs for WSL2 nested containers**: must include `--device /dev/fuse`,
+4. **runArgs for nested containers**: must include `--device /dev/fuse`,
    `--cap-add SETUID`, `--cap-add SETGID` in addition to seccomp/apparmor opts.
    `/dev/net/tun` is NOT needed — nested containers use slirp4netns, which is
    userspace and requires no tun device. (pasta would need it; slirp4netns does not.)
@@ -26,10 +27,8 @@ Key decisions made during development — do not change without discussion:
    (path derived dynamically from `$PWD` in post-create.sh) so Claude Code writes land in the
    workspace and get committed. Pre-commit hook scans for secrets.
 
-6. **macOS attach model gap**: `postCreateCommand` does NOT run on macOS — all lifecycle
-   steps (credential copy, symlink setup, Podman init) run via `container exec` in `run.sh`.
-   Workspace is mounted to `/workspaces/<name>` to match WSL2 Dev Containers default.
-   `container exec --workdir` sets CWD so `post-create.sh` uses `$PWD` correctly.
+6. **Podman on all platforms**: Both macOS and WSL2 use rootless Podman with the standard
+   Dev Containers lifecycle ("Reopen in Container"). No apple/container, no Docker.
 
-**How to apply:** Before any change, check if it affects both platforms. If touching
-credential flow or container lifecycle, update both devcontainer.json and run.sh.
+**How to apply:** Before any change, check if it affects the devcontainer lifecycle.
+If touching credential flow, update both devcontainer.json and post-create.sh.

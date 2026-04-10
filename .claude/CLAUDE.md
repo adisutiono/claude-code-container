@@ -2,17 +2,17 @@
 
 ## What This Repo Is
 
-This is a **GitHub template repository** that provides an isolated, cross-platform container environment for running Claude Code. It supports macOS (Apple Virtualization.framework via `apple/container`) and Windows WSL2 (rootless Podman). Nested containers are supported inside the devcontainer for sandboxed workloads.
+This is a **GitHub template repository** that provides an isolated, cross-platform container environment for running Claude Code. It uses rootless Podman on all platforms (macOS and Windows WSL2). Nested containers are supported inside the devcontainer for sandboxed workloads.
 
 When someone instantiates this template, they get a ready-to-use Claude Code development environment with credential forwarding, nested container support, and cross-platform tooling.
 
 ## Architecture Decisions (Do Not Change Without Discussion)
 
-1. **Dual runtime model**: macOS uses `apple/container` (attach model), WSL2 uses Podman (reopen-in-container model). These are fundamentally different lifecycle models — do not try to unify them into one path.
-2. **Credential forwarding via `/run/host-secrets/`**: Host credentials are mounted read-only, then copied to writable locations by `postCreateCommand` / `run.sh`. This avoids permission issues with UID mismatches between host and container.
+1. **Podman everywhere**: Both macOS and WSL2 use rootless Podman with the standard Dev Containers lifecycle ("Reopen in Container"). No Docker dependency.
+2. **Credential forwarding via `/run/host-secrets/`**: Host credentials are mounted read-only, then copied to writable locations by `postCreateCommand`. This avoids permission issues with UID mismatches between host and container.
 3. **Nested containers via rootless Podman inside the devcontainer**: The inner Podman uses `fuse-overlayfs`, `slirp4netns`, and `keep-id` user namespace mapping. The subuid/subgid range is 131072 (not 65536) to avoid the triple-mapping overlap bug.
 4. **Ubuntu base image**: Pinned to a specific release in the Containerfile. Podman packages from Ubuntu repos are preferred over upstream to avoid dependency conflicts.
-5. **No Docker dependency**: The entire stack is Docker-free. WSL2 uses Podman natively; macOS uses Apple's container CLI. `DOCKER_HOST` is set to the Podman socket for tool compatibility only.
+5. **No Docker dependency**: The entire stack is Docker-free. Podman is the sole container runtime. `DOCKER_HOST` is set to the Podman socket for tool compatibility only.
 
 ## Repository Structure
 
@@ -31,9 +31,8 @@ docs/                 → Architecture docs, sandbox model, conventions
 ## Key Files and Their Roles
 
 - `.devcontainer/Containerfile` — the OCI image definition. Changes here require `make build`.
-- `.devcontainer/devcontainer.json` — VSCode devcontainer config. `runArgs` apply to WSL2 only.
-- `scripts/macos/run.sh` — starts the container on macOS and copies credentials in.
-- `Makefile` — primary interface: `build`, `run`, `stop`, `status`, `clean`.
+- `.devcontainer/devcontainer.json` — VSCode devcontainer config.
+- `Makefile` — primary interface: `build`, `status`, `clean`.
 - `tests/container-checks.sh` — validates the container environment. Run in CI and locally.
 
 ## Coding Conventions
@@ -63,7 +62,6 @@ docs/                 → Architecture docs, sandbox model, conventions
 ### Do not modify without explicit human approval
 - `.devcontainer/config/containers.conf` — Podman engine config, security-sensitive
 - `.devcontainer/config/storage.conf` — storage driver config
-- `scripts/macos/run.sh` — macOS container lifecycle
 - `scripts/wsl2/install.sh` — WSL2 system configuration
 - Security-related `runArgs` in `devcontainer.json`
 

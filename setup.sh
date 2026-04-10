@@ -6,8 +6,8 @@
 #   bash setup.sh
 #
 # Supported platforms:
-#   macOS 15+ (Sequoia)  — installs Podman via Homebrew, Apple VZ backend
-#   Windows WSL2         — installs Podman natively inside the Linux distro
+#   macOS (Apple Silicon) — installs Podman via Homebrew
+#   Windows WSL2          — installs Podman natively inside the Linux distro
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -22,8 +22,15 @@ echo ""
 # ── Delegate to platform installer ───────────────────────────────────────────
 case "${DETECTED_OS}" in
   macos)
-    # shellcheck source=scripts/macos/install.sh
-    source "${SCRIPT_DIR}/scripts/macos/install.sh"
+    echo "==> macOS: checking Podman..."
+    if ! command -v podman &>/dev/null; then
+      echo "    Podman not found. Install via: brew install podman"
+      echo "    Or install Podman Desktop: https://podman-desktop.io/"
+      exit 1
+    fi
+    echo "    Podman: $(podman --version)"
+    echo ""
+    echo "Setup complete. Open this folder in VS Code and choose 'Reopen in Container'."
     ;;
   wsl2)
     # shellcheck source=scripts/wsl2/install.sh

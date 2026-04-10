@@ -5,9 +5,9 @@ type: project
 ---
 
 This repo is a GitHub Template Repository that provides a cross-platform isolated
-container environment for running Claude Code. Two platforms from one image:
-- macOS 15+ Apple Silicon: `apple/container` (Virtualization.framework), attach model
-- Windows WSL2: rootless Podman, reopen-in-container model
+container environment for running Claude Code. Rootless Podman on all platforms:
+- macOS (Apple Silicon): Podman Desktop or CLI, reopen-in-container model
+- Windows WSL2: Podman native, reopen-in-container model
 
 Core goals:
 1. Claude Code runs fully inside the container with credentials forwarded from host
@@ -18,5 +18,5 @@ Core goals:
 **Why:** User wants Claude Code to be the primary contributor inside the devcontainer,
 with context that survives rebuilds and machine changes.
 
-**How to apply:** Every change should respect the dual-platform model. Always verify
-both WSL2 (devcontainer.json lifecycle) and macOS (run.sh attach model) paths.
+**How to apply:** Both platforms share the same devcontainer.json lifecycle. Changes
+to credential flow or container setup go in devcontainer.json and post-create.sh.

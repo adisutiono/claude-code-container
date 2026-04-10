@@ -1,8 +1,4 @@
 {
-  // macOS: enables "Dev Containers: Attach to Running Apple Container..." command.
-  // https://github.com/microsoft/vscode-remote-release/issues/11012
-  "dev.containers.experimentalAppleContainerSupport": true,
-
-  // WSL2: use Podman as the container runtime (socket path set by setup.sh).
+  // Use Podman as the container runtime (socket path set by setup.sh).
   "dev.containers.dockerPath": "podman"
 }
