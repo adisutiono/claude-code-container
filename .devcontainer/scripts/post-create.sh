@@ -114,11 +114,11 @@ if [[ -d "${WORKSPACE_ROOT}/.git" && -f "${WORKSPACE_ROOT}/scripts/hooks/pre-com
 fi
 
 # ── Fix workspace file permissions ───────────────────────────────────────────
-# On virtiofs mounts (Podman on macOS), the host UID maps to root inside the
-# container. chown fails on virtiofs, but chmod works. Make the entire workspace
-# writable so the container user can edit all files and use git.
-# Run chmod on all non-writable files/dirs — not just a subset.
+# With --userns=keep-id:uid=1000,gid=1000 in runArgs, virtiofs files should
+# already appear owned by the container user. The chown + chmod below are
+# fallbacks for edge cases (WSL2 bind mounts, or if keep-id is unavailable).
 if [[ -d "${WORKSPACE_ROOT}" ]]; then
+  sudo chown -R "$(id -u):$(id -g)" "${WORKSPACE_ROOT}" 2>/dev/null || true
   sudo chmod -R a+w "${WORKSPACE_ROOT}" 2>/dev/null || \
     sudo find "${WORKSPACE_ROOT}" -not -writable -exec chmod a+w {} + 2>/dev/null || true
   echo "    Fixed workspace file permissions"

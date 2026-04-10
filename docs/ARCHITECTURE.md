@@ -24,6 +24,12 @@ Host (macOS / WSL2)
 
 VS Code uses the Dev Containers extension to build and start the container via the Podman socket. The `postCreateCommand` runs automatically after container creation.
 
+### Workspace UID Mapping
+
+On macOS, Podman uses virtiofs to mount the workspace into the container. Without UID mapping, the host user's UID (e.g., 501) appears as `root` inside the container, causing permission failures for git operations and file edits.
+
+`devcontainer.json` includes `--userns=keep-id:uid=1000,gid=1000` in `runArgs`, which maps the host user to UID 1000 (`claude`) inside the container. This ensures workspace files appear owned by the correct user. `post-create.sh` includes a `chown`/`chmod` fallback for environments where `keep-id` is unavailable.
+
 ## Credential Flow
 
 ```
