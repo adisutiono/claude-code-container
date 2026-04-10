@@ -91,7 +91,8 @@ fi
 # ── Install pre-commit hook for secret scanning ─────────────────────────────
 if [[ -d "${WORKSPACE_ROOT}/.git" && -f "${WORKSPACE_ROOT}/scripts/hooks/pre-commit" ]]; then
   mkdir -p "${WORKSPACE_ROOT}/.git/hooks"
-  ln -sf ../../scripts/hooks/pre-commit "${WORKSPACE_ROOT}/.git/hooks/pre-commit"
+  rm -f "${WORKSPACE_ROOT}/.git/hooks/pre-commit"
+  ln -s ../../scripts/hooks/pre-commit "${WORKSPACE_ROOT}/.git/hooks/pre-commit"
   chmod +x "${WORKSPACE_ROOT}/scripts/hooks/pre-commit"
   echo "    Installed pre-commit hook (secret scanning)"
 fi
