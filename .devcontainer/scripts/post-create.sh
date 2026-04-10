@@ -6,26 +6,32 @@ set -euo pipefail
 echo "==> Initialising container environment..."
 
 # ── Copy credentials from read-only host mounts ─────────────────────────────
+# Host-mounted files retain their host UID (e.g. 501 on macOS, 1000 on WSL2)
+# and may be mode 600. Use sudo to read them, then chown to the container user.
 if [[ -f /run/host-secrets/claude.json ]]; then
-  cp /run/host-secrets/claude.json "$HOME/.claude.json"
+  sudo cp /run/host-secrets/claude.json "$HOME/.claude.json"
+  sudo chown "$(id -u):$(id -g)" "$HOME/.claude.json"
   chmod 600 "$HOME/.claude.json"
   echo "    Copied ~/.claude.json"
 fi
 
 if [[ -d /run/host-secrets/claude-dir ]]; then
   if [[ -f "/run/host-secrets/claude-dir/.credentials.json" ]]; then
-    cp "/run/host-secrets/claude-dir/.credentials.json" "$HOME/.claude/.credentials.json"
+    sudo cp "/run/host-secrets/claude-dir/.credentials.json" "$HOME/.claude/.credentials.json"
+    sudo chown "$(id -u):$(id -g)" "$HOME/.claude/.credentials.json"
     chmod 600 "$HOME/.claude/.credentials.json"
     echo "    Copied ~/.claude/.credentials.json"
   fi
   if [[ -d /run/host-secrets/claude-dir/sessions ]]; then
-    cp -r /run/host-secrets/claude-dir/sessions "$HOME/.claude/"
+    sudo cp -r /run/host-secrets/claude-dir/sessions "$HOME/.claude/"
+    sudo chown -R "$(id -u):$(id -g)" "$HOME/.claude/sessions"
     echo "    Copied ~/.claude/sessions/"
   fi
 fi
 
 if [[ -f /run/host-secrets/gitconfig ]]; then
-  cp /run/host-secrets/gitconfig "$HOME/.gitconfig"
+  sudo cp /run/host-secrets/gitconfig "$HOME/.gitconfig"
+  sudo chown "$(id -u):$(id -g)" "$HOME/.gitconfig"
   chmod 600 "$HOME/.gitconfig"
   echo "    Copied ~/.gitconfig"
 fi
