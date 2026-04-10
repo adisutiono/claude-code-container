@@ -72,7 +72,7 @@
     "source=${localEnv:HOME}/.claude.json,target=/run/host-secrets/claude.json,type=bind,readonly",
     "source=${localEnv:HOME}/.claude,target=/run/host-secrets/claude-dir,type=bind,readonly",
     "source=${localEnv:HOME}/.gitconfig,target=/run/host-secrets/gitconfig,type=bind,readonly",
-    "source=${localEnv:HOME}/.config/gh,target=/home/claude/.config/gh,type=bind,readonly"
+    "source=${localEnv:HOME}/.config/gh,target=/run/host-secrets/gh,type=bind,readonly"
   ],
 
   // Expose ports used by Claude Code workloads as needed.

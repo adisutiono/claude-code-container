@@ -29,6 +29,12 @@ if [[ -d /run/host-secrets/claude-dir ]]; then
   fi
 fi
 
+if [[ -d /run/host-secrets/gh ]]; then
+  sudo cp -r /run/host-secrets/gh/. "$HOME/.config/gh/"
+  sudo chown -R "$(id -u):$(id -g)" "$HOME/.config/gh"
+  echo "    Copied ~/.config/gh/"
+fi
+
 if [[ -f /run/host-secrets/gitconfig ]]; then
   sudo cp /run/host-secrets/gitconfig "$HOME/.gitconfig"
   sudo chown "$(id -u):$(id -g)" "$HOME/.gitconfig"
