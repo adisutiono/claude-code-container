@@ -83,6 +83,16 @@ else
   check "can create git branch" bash -c 'git branch __permission-test 2>/dev/null && git branch -d __permission-test >/dev/null 2>&1'
 fi
 
+# ── Claude Code authentication ───────────────────────────────────────────────
+echo "==> Claude Code credentials"
+if [ "${CI:-false}" = "true" ]; then
+  echo "  SKIP  claude credentials (not configured in CI)"
+else
+  check "~/.claude.json exists"                test -f "${HOME}/.claude.json"
+  check "~/.claude/.credentials.json exists"   test -f "${HOME}/.claude/.credentials.json"
+  check ".credentials.json is non-empty"       test -s "${HOME}/.claude/.credentials.json"
+fi
+
 # ── GitHub CLI authentication ────────────────────────────────────────────────
 echo "==> GitHub CLI"
 if [ "${CI:-false}" = "true" ]; then

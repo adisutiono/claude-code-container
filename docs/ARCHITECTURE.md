@@ -38,6 +38,17 @@ Host-mounted files may be owned by a different UID (e.g. root) with mode 600. `p
 
 The `/run/host-secrets/` staging area exists because direct bind mounts of individual files have portability issues across container runtimes (UID mapping, filesystem notifications). The copy-on-create pattern is more reliable.
 
+### macOS Keychain Extraction
+
+On macOS, both Claude Code and GitHub CLI may store OAuth tokens in the system Keychain rather than in filesystem config files. Since the Keychain is a macOS-only subsystem, these tokens are invisible to the Linux container.
+
+`initialize-host.sh` (runs on the host via `initializeCommand`) extracts tokens before container creation:
+
+- **GitHub CLI**: `gh auth token` → staged to `~/.config/gh/.devcontainer-hosts.yml`
+- **Claude Code**: `security find-generic-password` → staged to `~/.claude/.devcontainer-credentials.json`
+
+`post-create.sh` detects these staging files and moves them into the container's writable credential locations, overriding any empty filesystem copies. Staging files are consumed (moved, not copied) so they don't persist.
+
 ## Nested Container Architecture
 
 The inner Podman is configured for rootless operation inside an already-namespaced environment:

@@ -59,12 +59,13 @@ This document describes the isolation boundaries for the Claude Code container e
 ## Credential Lifecycle
 
 1. Host credentials are created by the user (e.g., `claude login`, `gh auth login`)
-2. At container start, credentials are mounted read-only into `/run/host-secrets/`
-3. `postCreateCommand` / `run.sh` copies them to writable locations
-4. A background credential watcher (`inotifywait`) monitors `/run/host-secrets/` for changes and auto-copies updated credentials into the container
-5. Claude Code uses the writable copies (it needs write access for token refresh)
-6. On container stop, writable copies are destroyed (container is ephemeral)
-7. Token refresh writes go to the container-local copy, NOT back to the host
+2. On macOS, `initializeCommand` extracts Keychain-stored tokens (Claude Code, GitHub CLI) into staging files. These tokens cannot be bind-mounted — the Keychain is a macOS-only subsystem unavailable inside the Linux container.
+3. At container start, credentials are mounted read-only into `/run/host-secrets/`
+4. `postCreateCommand` copies them to writable locations. Keychain-staged credentials (if present) override empty filesystem copies.
+5. A background credential watcher (`inotifywait`) monitors `/run/host-secrets/` for changes and auto-copies updated credentials into the container
+6. Claude Code uses the writable copies (it needs write access for token refresh)
+7. On container stop, writable copies are destroyed (container is ephemeral)
+8. Token refresh writes go to the container-local copy, NOT back to the host
 
 **Credential auto-refresh**: When the host rotates credentials (e.g., Claude auth token refresh), the `inotifywait`-based watcher detects the change and copies the updated file into `~/.claude/`. Log output goes to `/tmp/credential-watcher.log` inside the container.
 

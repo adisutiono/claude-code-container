@@ -23,10 +23,13 @@ copy_credentials() {
   fi
 
   if [[ -f "${WATCH_DIR}/claude-dir/.credentials.json" ]]; then
-    sudo cp "${WATCH_DIR}/claude-dir/.credentials.json" "$HOME/.claude/.credentials.json"
-    sudo chown "$(id -u):$(id -g)" "$HOME/.claude/.credentials.json"
-    chmod 600 "$HOME/.claude/.credentials.json"
-    echo "${LOG_PREFIX} Refreshed ~/.claude/.credentials.json"
+    # Only overwrite with a non-empty file to avoid blanking Keychain-exported credentials
+    if sudo test -s "${WATCH_DIR}/claude-dir/.credentials.json"; then
+      sudo cp "${WATCH_DIR}/claude-dir/.credentials.json" "$HOME/.claude/.credentials.json"
+      sudo chown "$(id -u):$(id -g)" "$HOME/.claude/.credentials.json"
+      chmod 600 "$HOME/.claude/.credentials.json"
+      echo "${LOG_PREFIX} Refreshed ~/.claude/.credentials.json"
+    fi
   fi
 
   if [[ -d "${WATCH_DIR}/claude-dir/sessions" ]]; then
