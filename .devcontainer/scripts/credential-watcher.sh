@@ -14,25 +14,30 @@ if [[ ! -d "${WATCH_DIR}" ]]; then
 fi
 
 copy_credentials() {
+  # Host-mounted files may be owned by root with mode 600 — use sudo to read.
   if [[ -f "${WATCH_DIR}/claude.json" ]]; then
-    cp "${WATCH_DIR}/claude.json" "$HOME/.claude.json"
+    sudo cp "${WATCH_DIR}/claude.json" "$HOME/.claude.json"
+    sudo chown "$(id -u):$(id -g)" "$HOME/.claude.json"
     chmod 600 "$HOME/.claude.json"
     echo "${LOG_PREFIX} Refreshed ~/.claude.json"
   fi
 
   if [[ -f "${WATCH_DIR}/claude-dir/.credentials.json" ]]; then
-    cp "${WATCH_DIR}/claude-dir/.credentials.json" "$HOME/.claude/.credentials.json"
+    sudo cp "${WATCH_DIR}/claude-dir/.credentials.json" "$HOME/.claude/.credentials.json"
+    sudo chown "$(id -u):$(id -g)" "$HOME/.claude/.credentials.json"
     chmod 600 "$HOME/.claude/.credentials.json"
     echo "${LOG_PREFIX} Refreshed ~/.claude/.credentials.json"
   fi
 
   if [[ -d "${WATCH_DIR}/claude-dir/sessions" ]]; then
-    cp -r "${WATCH_DIR}/claude-dir/sessions" "$HOME/.claude/"
+    sudo cp -r "${WATCH_DIR}/claude-dir/sessions" "$HOME/.claude/"
+    sudo chown -R "$(id -u):$(id -g)" "$HOME/.claude/sessions"
     echo "${LOG_PREFIX} Refreshed ~/.claude/sessions/"
   fi
 
   if [[ -f "${WATCH_DIR}/gitconfig" ]]; then
-    cp "${WATCH_DIR}/gitconfig" "$HOME/.gitconfig"
+    sudo cp "${WATCH_DIR}/gitconfig" "$HOME/.gitconfig"
+    sudo chown "$(id -u):$(id -g)" "$HOME/.gitconfig"
     chmod 600 "$HOME/.gitconfig"
     echo "${LOG_PREFIX} Refreshed ~/.gitconfig"
   fi
