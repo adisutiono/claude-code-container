@@ -24,8 +24,10 @@ if [[ -d /run/host-secrets/claude-dir ]]; then
   fi
   # If the host exported Keychain credentials, use them (overrides empty file copy).
   # This handles macOS where Claude Code stores tokens in the Keychain, not on disk.
-  if [[ -f "$HOME/.claude/.devcontainer-credentials.json" ]]; then
-    mv "$HOME/.claude/.devcontainer-credentials.json" "$HOME/.claude/.credentials.json"
+  # The staging file lives on the read-only mount — copy it to the writable location.
+  if sudo test -f "/run/host-secrets/claude-dir/.devcontainer-credentials.json"; then
+    sudo cp "/run/host-secrets/claude-dir/.devcontainer-credentials.json" "$HOME/.claude/.credentials.json"
+    sudo chown "$(id -u):$(id -g)" "$HOME/.claude/.credentials.json"
     chmod 600 "$HOME/.claude/.credentials.json"
     echo "    Applied Keychain-exported Claude credentials"
   fi
