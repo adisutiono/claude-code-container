@@ -17,6 +17,7 @@ if [[ -f /run/host-secrets/claude.json ]]; then
 fi
 
 if [[ -d /run/host-secrets/claude-dir ]]; then
+  mkdir -p "$HOME/.claude"
   if [[ -f "/run/host-secrets/claude-dir/.credentials.json" ]]; then
     cp "/run/host-secrets/claude-dir/.credentials.json" "$HOME/.claude/.credentials.json"
     chmod 600 "$HOME/.claude/.credentials.json"
@@ -36,6 +37,7 @@ if [[ -d /run/host-secrets/claude-dir ]]; then
 fi
 
 if [[ -d /run/host-secrets/gh ]]; then
+  mkdir -p "$HOME/.config/gh"
   cp -r /run/host-secrets/gh/. "$HOME/.config/gh/"
 
   # If the host exported a token-bearing staging file, use it as hosts.yml.
