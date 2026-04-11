@@ -5,8 +5,12 @@
     "context": "..",
     "args": {
       "USERNAME": "claude",
-      "USER_UID": "1000",
-      "USER_GID": "1000"
+      // HOST_UID / HOST_GID are set by initializeCommand and persisted in
+      // the user's shell profile (~/.zprofile on macOS, ~/.bash_profile on
+      // WSL2). On macOS the default UID is 501; on WSL2 it's 1000. Using the
+      // host UID ensures the container user matches virtiofs file ownership.
+      "USER_UID": "${localEnv:HOST_UID:1000}",
+      "USER_GID": "${localEnv:HOST_GID:1000}"
     }
   },
 
@@ -23,7 +27,7 @@
   // networking — a userspace implementation that does not require the tun kernel device.
   // (pasta, the Podman 5.x default, would need /dev/net/tun; slirp4netns does not.)
   "runArgs": [
-    "--userns=keep-id:uid=1000,gid=1000",
+    "--userns=keep-id:uid=${localEnv:HOST_UID:1000},gid=${localEnv:HOST_GID:1000}",
     "--security-opt", "seccomp=unconfined",
     "--security-opt", "apparmor=unconfined",
     "--device", "/dev/fuse",

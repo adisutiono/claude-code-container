@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # initializeCommand — runs on the HOST before the container is created.
 # Ensures placeholder files/directories exist so bind mounts succeed,
-# and exports gh auth tokens from the system credential store into a
-# container-compatible hosts.yml staging file.
+# exports gh auth tokens from the system credential store into a
+# container-compatible hosts.yml staging file, and persists HOST_UID/HOST_GID
+# for cross-platform UID mapping.
 set -euo pipefail
 
 # ── Ensure placeholder files/dirs for bind mounts ───────────────────────────
@@ -10,6 +11,44 @@ set -euo pipefail
 [ -d "${HOME}/.claude" ] || mkdir -p "${HOME}/.claude"
 [ -d "${HOME}/.config/gh" ] || mkdir -p "${HOME}/.config/gh"
 [ -f "${HOME}/.gitconfig" ] || touch "${HOME}/.gitconfig"
+
+# ── Persist HOST_UID / HOST_GID for devcontainer.json ────────────────────────
+# devcontainer.json references ${localEnv:HOST_UID:1000} in build args and
+# runArgs. VS Code reads these from its process environment, which inherits
+# from the user's shell profile. We write a small env file and add a source
+# line to the profile so the vars are available on every subsequent launch.
+#
+# On WSL2 (UID 1000) the default of 1000 already matches, so this is mainly
+# needed for macOS where the default UID is 501.
+HOST_ENV_FILE="${HOME}/.devcontainer-host-env"
+cat > "${HOST_ENV_FILE}" <<HEOF
+export HOST_UID=$(id -u)
+export HOST_GID=$(id -g)
+HEOF
+
+# Source it now (for any child processes in this script).
+# shellcheck disable=SC1090
+source "${HOST_ENV_FILE}"
+
+# Add persistent source line to the user's login profile (zsh on macOS,
+# bash on WSL2). Use .zprofile / .bash_profile so GUI-launched VS Code
+# (which sources login profiles) picks up the vars.
+if [[ "$(uname -s)" == "Darwin" ]]; then
+  PROFILE="${HOME}/.zprofile"
+else
+  PROFILE="${HOME}/.bash_profile"
+fi
+MARKER="# devcontainer-host-env"
+if ! grep -qF "${MARKER}" "${PROFILE}" 2>/dev/null; then
+  printf '\n%s\n[ -f "%s" ] && source "%s"\n' \
+    "${MARKER}" "${HOST_ENV_FILE}" "${HOST_ENV_FILE}" >> "${PROFILE}"
+  echo "[initializeCommand] Added HOST_UID/HOST_GID to ${PROFILE}"
+  echo "[initializeCommand] NOTE: If this is the first run, restart VS Code so it"
+  echo "                    picks up HOST_UID=${HOST_UID} HOST_GID=${HOST_GID},"
+  echo "                    then Rebuild Container."
+else
+  echo "[initializeCommand] HOST_UID=${HOST_UID} HOST_GID=${HOST_GID}"
+fi
 
 # ── Export gh OAuth token for container use ──────────────────────────────────
 # On macOS, gh stores tokens in the system Keychain — not in hosts.yml.

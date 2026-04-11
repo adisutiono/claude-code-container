@@ -113,15 +113,26 @@ if [[ -d "${WORKSPACE_ROOT}/.git" && -f "${WORKSPACE_ROOT}/scripts/hooks/pre-com
   echo "    Installed pre-commit hook (secret scanning)"
 fi
 
-# ── Fix workspace file permissions ───────────────────────────────────────────
-# With --userns=keep-id:uid=1000,gid=1000 in runArgs, virtiofs files should
-# already appear owned by the container user. The chown + chmod below are
-# fallbacks for edge cases (WSL2 bind mounts, or if keep-id is unavailable).
+# ── Verify workspace file ownership ──────────────────────────────────────────
+# With --userns=keep-id, the host user's UID is mapped to the container user's
+# UID. If HOST_UID was set correctly in the user's environment (see
+# initializeCommand), the container user UID matches the host UID, and virtiofs
+# files appear owned by the container user on both WSL2 and macOS.
 if [[ -d "${WORKSPACE_ROOT}" ]]; then
-  sudo chown -R "$(id -u):$(id -g)" "${WORKSPACE_ROOT}" 2>/dev/null || true
-  sudo chmod -R a+w "${WORKSPACE_ROOT}" 2>/dev/null || \
-    sudo find "${WORKSPACE_ROOT}" -not -writable -exec chmod a+w {} + 2>/dev/null || true
-  echo "    Fixed workspace file permissions"
+  WORKSPACE_UID="$(stat -c %u "${WORKSPACE_ROOT}")"
+  CONTAINER_UID="$(id -u)"
+  if [[ "${WORKSPACE_UID}" == "${CONTAINER_UID}" ]]; then
+    echo "    Workspace ownership OK (UID ${CONTAINER_UID})"
+  elif [[ "${WORKSPACE_UID}" == "65534" ]]; then
+    echo "    WARNING: Workspace files owned by nobody (UID 65534)."
+    echo "    The host UID is not mapped in the container's user namespace."
+    echo "    Set HOST_UID/HOST_GID in your shell profile and rebuild:"
+    echo "      echo 'export HOST_UID=\$(id -u) HOST_GID=\$(id -g)' >> ~/.zprofile"
+    echo "    Then: Cmd+Shift+P → Dev Containers: Rebuild Container"
+  else
+    echo "    WARNING: Workspace owned by UID ${WORKSPACE_UID}, container user is ${CONTAINER_UID}."
+    echo "    Set HOST_UID=${WORKSPACE_UID} HOST_GID=$(stat -c %g "${WORKSPACE_ROOT}") in your shell profile and rebuild."
+  fi
 fi
 
 # ── Podman / nested container setup ──────────────────────────────────────────
