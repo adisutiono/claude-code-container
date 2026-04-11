@@ -91,13 +91,13 @@ RUN printf '%s\n' "${USERNAME}:100000:131072" > /etc/subuid \
 # Persist shell history across container rebuilds.
 RUN mkdir /commandhistory \
     && touch /commandhistory/.bash_history \
-    && chown -R ${USERNAME}:${USERNAME} /commandhistory
+    && chown -R ${USER_UID}:${USER_GID} /commandhistory
 
 # Create workspace and .claude directories as root before user switch.
 # /run/host-secrets is the mount target for read-only host credential files.
 RUN mkdir -p /home/${USERNAME}/.claude /run/host-secrets \
-    && chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.claude \
-    && chown ${USERNAME}:${USERNAME} /run/host-secrets \
+    && chown -R ${USER_UID}:${USER_GID} /home/${USERNAME}/.claude \
+    && chown ${USER_UID}:${USER_GID} /run/host-secrets \
     && chmod 700 /run/host-secrets
 
 USER ${USERNAME}
@@ -131,19 +131,19 @@ RUN mkdir -p \
     /home/${USERNAME}/.config/containers \
     /home/${USERNAME}/.local/share/containers/storage
 
-COPY --chown=${USERNAME}:${USERNAME} \
+COPY --chown=${USER_UID}:${USER_GID} \
     .devcontainer/config/containers.conf \
     /home/${USERNAME}/.config/containers/containers.conf
 
-COPY --chown=${USERNAME}:${USERNAME} \
+COPY --chown=${USER_UID}:${USER_GID} \
     .devcontainer/config/storage.conf \
     /home/${USERNAME}/.config/containers/storage.conf
 
-COPY --chown=${USERNAME}:${USERNAME} \
+COPY --chown=${USER_UID}:${USER_GID} \
     .devcontainer/scripts/post-create.sh \
     /home/${USERNAME}/.devcontainer/post-create.sh
 
-COPY --chown=${USERNAME}:${USERNAME} \
+COPY --chown=${USER_UID}:${USER_GID} \
     .devcontainer/scripts/credential-watcher.sh \
     /home/${USERNAME}/.devcontainer/credential-watcher.sh
 
