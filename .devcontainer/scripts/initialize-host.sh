@@ -97,7 +97,7 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
     # Try known Keychain service names used by Claude Code.
     # Allow override via env var for non-standard installations.
     CLAUDE_TOKEN=""
-    KEYCHAIN_SERVICES=("claude.ai" "api.anthropic.com" "com.anthropic.claude-code" "claude-code")
+    KEYCHAIN_SERVICES=("Claude Code-credentials" "claude.ai" "api.anthropic.com" "com.anthropic.claude-code" "claude-code")
     if [[ -n "${CLAUDE_KEYCHAIN_SERVICE:-}" ]]; then
       KEYCHAIN_SERVICES=("${CLAUDE_KEYCHAIN_SERVICE}" "${KEYCHAIN_SERVICES[@]}")
     fi
@@ -118,14 +118,8 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
 
     if [[ -n "${CLAUDE_TOKEN}" ]]; then
       # Write staging file. post-create.sh will move this into place.
-      # Format mirrors Claude Code's .credentials.json structure.
-      cat > "${CLAUDE_STAGED}" <<CEOF
-{
-  "claudeAiOauth": {
-    "token": "${CLAUDE_TOKEN}"
-  }
-}
-CEOF
+      # The keychain value is the complete credentials JSON — write it directly.
+      echo "${CLAUDE_TOKEN}" > "${CLAUDE_STAGED}"
       chmod 600 "${CLAUDE_STAGED}"
       echo "[initializeCommand] Exported Claude token to staging file"
     else
