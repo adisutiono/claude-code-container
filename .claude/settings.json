@@ -49,5 +49,5 @@
       "Edit(scripts/wsl2/*)"
     ]
   },
-  "model": "opus"
+  "model": "sonnet"
 }
