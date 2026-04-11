@@ -45,6 +45,10 @@ CI builds via `podman build` with `--platform linux/amd64`; macOS builds use `--
 
 Both platforms use the standard Dev Containers lifecycle: `devcontainer.json` controls `build`, `runArgs`, `postCreateCommand`, and volume `mounts`. VS Code's "Reopen in Container" handles everything.
 
+### Workspace UID mapping
+
+The container user UID is built from `HOST_UID` / `HOST_GID` environment variables (defaulting to 1000). `initializeCommand` detects the host UID and persists it in `~/.devcontainer-host-env`, which is sourced from the user's login profile. `devcontainer.json` references these via `${localEnv:HOST_UID:1000}` in both `build.args` and `--userns=keep-id` runArgs. On macOS (UID 501), this ensures the container user matches virtiofs file ownership. On WSL2 (UID 1000), the default already matches. First-time macOS users need one VS Code restart after the initial `initializeCommand` sets up the profile.
+
 ### Credential flow
 
 Host credentials are bind-mounted read-only into `/run/host-secrets/` and then copied to writable locations by `post-create.sh`:

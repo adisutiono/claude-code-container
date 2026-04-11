@@ -26,9 +26,11 @@ VS Code uses the Dev Containers extension to build and start the container via t
 
 ### Workspace UID Mapping
 
-On macOS, Podman uses virtiofs to mount the workspace into the container. Without UID mapping, the host user's UID (e.g., 501) appears as `root` inside the container, causing permission failures for git operations and file edits.
+On macOS, Podman uses virtiofs to mount the workspace into the container. Without UID mapping, the host user's UID (e.g., 501) appears as `nobody:nogroup` inside the container, causing permission failures for git operations and file edits. On WSL2, the host UID is typically 1000, matching the container user.
 
-`devcontainer.json` includes `--userns=keep-id:uid=1000,gid=1000` in `runArgs`, which maps the host user to UID 1000 (`claude`) inside the container. This ensures workspace files appear owned by the correct user. `post-create.sh` includes a `chown`/`chmod` fallback for environments where `keep-id` is unavailable.
+`devcontainer.json` uses `--userns=keep-id:uid=${localEnv:HOST_UID:1000},gid=${localEnv:HOST_GID:1000}` in `runArgs` and the same variables in `build.args`, so the container user's UID matches the host user's UID. `initializeCommand` (`initialize-host.sh`) detects the host UID/GID and persists them in `~/.devcontainer-host-env`, which is sourced from the user's login profile (`~/.zprofile` on macOS, `~/.bash_profile` on WSL2). VS Code reads these environment variables via `${localEnv:HOST_UID}` when parsing `devcontainer.json`.
+
+On first run, the env vars may not yet be in VS Code's process environment (defaults to 1000). After `initializeCommand` sets up the profile source, a VS Code restart + container rebuild picks up the correct UID. On WSL2 where UID is already 1000, the default always works.
 
 ## Credential Flow
 
