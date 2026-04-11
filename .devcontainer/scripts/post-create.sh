@@ -8,39 +8,35 @@ echo "==> Initialising container environment..."
 # ── Copy credentials from read-only host mounts ─────────────────────────────
 # Host-mounted files retain their host UID (e.g. 501 on macOS, 1000 on WSL2)
 # and may be mode 600. Use sudo to read them, then chown to the container user.
+# With --userns=keep-id the container user owns the mounted files but root
+# (sudo) does NOT — so read from mounts as the container user, not via sudo.
 if [[ -f /run/host-secrets/claude.json ]]; then
-  sudo cp /run/host-secrets/claude.json "$HOME/.claude.json"
-  sudo chown "$(id -u):$(id -g)" "$HOME/.claude.json"
+  cp /run/host-secrets/claude.json "$HOME/.claude.json"
   chmod 600 "$HOME/.claude.json"
   echo "    Copied ~/.claude.json"
 fi
 
 if [[ -d /run/host-secrets/claude-dir ]]; then
   if [[ -f "/run/host-secrets/claude-dir/.credentials.json" ]]; then
-    sudo cp "/run/host-secrets/claude-dir/.credentials.json" "$HOME/.claude/.credentials.json"
-    sudo chown "$(id -u):$(id -g)" "$HOME/.claude/.credentials.json"
+    cp "/run/host-secrets/claude-dir/.credentials.json" "$HOME/.claude/.credentials.json"
     chmod 600 "$HOME/.claude/.credentials.json"
     echo "    Copied ~/.claude/.credentials.json"
   fi
   # If the host exported Keychain credentials, use them (overrides empty file copy).
   # This handles macOS where Claude Code stores tokens in the Keychain, not on disk.
-  # The staging file lives on the read-only mount — copy it to the writable location.
-  if sudo test -f "/run/host-secrets/claude-dir/.devcontainer-credentials.json"; then
-    sudo cp "/run/host-secrets/claude-dir/.devcontainer-credentials.json" "$HOME/.claude/.credentials.json"
-    sudo chown "$(id -u):$(id -g)" "$HOME/.claude/.credentials.json"
+  if [[ -f "/run/host-secrets/claude-dir/.devcontainer-credentials.json" ]]; then
+    cp "/run/host-secrets/claude-dir/.devcontainer-credentials.json" "$HOME/.claude/.credentials.json"
     chmod 600 "$HOME/.claude/.credentials.json"
     echo "    Applied Keychain-exported Claude credentials"
   fi
   if [[ -d /run/host-secrets/claude-dir/sessions ]]; then
-    sudo cp -r /run/host-secrets/claude-dir/sessions "$HOME/.claude/"
-    sudo chown -R "$(id -u):$(id -g)" "$HOME/.claude/sessions"
+    cp -r /run/host-secrets/claude-dir/sessions "$HOME/.claude/"
     echo "    Copied ~/.claude/sessions/"
   fi
 fi
 
 if [[ -d /run/host-secrets/gh ]]; then
-  sudo cp -r /run/host-secrets/gh/. "$HOME/.config/gh/"
-  sudo chown -R "$(id -u):$(id -g)" "$HOME/.config/gh"
+  cp -r /run/host-secrets/gh/. "$HOME/.config/gh/"
 
   # If the host exported a token-bearing staging file, use it as hosts.yml.
   # This handles macOS where gh stores tokens in the Keychain (not in hosts.yml).
@@ -54,8 +50,7 @@ if [[ -d /run/host-secrets/gh ]]; then
 fi
 
 if [[ -f /run/host-secrets/gitconfig ]]; then
-  sudo cp /run/host-secrets/gitconfig "$HOME/.gitconfig"
-  sudo chown "$(id -u):$(id -g)" "$HOME/.gitconfig"
+  cp /run/host-secrets/gitconfig "$HOME/.gitconfig"
   chmod 600 "$HOME/.gitconfig"
   echo "    Copied ~/.gitconfig"
 fi
