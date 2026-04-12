@@ -110,7 +110,6 @@ if [[ -d "${WORKSPACE_ROOT}/.git" && -f "${WORKSPACE_ROOT}/scripts/hooks/pre-com
   mkdir -p "${WORKSPACE_ROOT}/.git/hooks"
   rm -f "${WORKSPACE_ROOT}/.git/hooks/pre-commit"
   ln -s ../../scripts/hooks/pre-commit "${WORKSPACE_ROOT}/.git/hooks/pre-commit"
-  chmod +x "${WORKSPACE_ROOT}/scripts/hooks/pre-commit"
   echo "    Installed pre-commit hook (secret scanning)"
 fi
 
