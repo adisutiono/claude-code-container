@@ -78,6 +78,8 @@ fi
 WORKSPACE_ROOT="${PWD}"
 WORKSPACE_CLAUDE="${WORKSPACE_ROOT}/.claude"
 
+mkdir -p "$HOME/.claude"
+
 if [[ -d "${WORKSPACE_CLAUDE}/commands" ]]; then
   rm -rf "${HOME}/.claude/commands"
   ln -sfn "${WORKSPACE_CLAUDE}/commands" "${HOME}/.claude/commands"
