@@ -49,5 +49,18 @@
       "Edit(scripts/wsl2/*)"
     ]
   },
-  "model": "sonnet"
+  "hooks": {
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/session-summary.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "model": "opus"
 }
