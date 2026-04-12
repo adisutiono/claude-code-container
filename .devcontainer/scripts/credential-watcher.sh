@@ -27,6 +27,15 @@ copy_credentials() {
     echo "${LOG_PREFIX} Refreshed ~/.claude/.credentials.json"
   fi
 
+  # Keychain-exported staging file — written by scripts/macos-refresh-credentials.sh
+  # on the host when a token expires. Takes precedence over the filesystem copy
+  # because it reflects the latest Keychain state.
+  if [[ -s "${WATCH_DIR}/claude-dir/.devcontainer-credentials.json" ]]; then
+    cp "${WATCH_DIR}/claude-dir/.devcontainer-credentials.json" "$HOME/.claude/.credentials.json"
+    chmod 600 "$HOME/.claude/.credentials.json"
+    echo "${LOG_PREFIX} Refreshed ~/.claude/.credentials.json (Keychain export)"
+  fi
+
   if [[ -d "${WATCH_DIR}/claude-dir/sessions" ]]; then
     cp -r "${WATCH_DIR}/claude-dir/sessions" "$HOME/.claude/"
     echo "${LOG_PREFIX} Refreshed ~/.claude/sessions/"

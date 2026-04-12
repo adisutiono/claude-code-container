@@ -69,7 +69,15 @@ This document describes the isolation boundaries for the Claude Code container e
 
 **Credential auto-refresh**: When the host rotates credentials (e.g., Claude auth token refresh), the `inotifywait`-based watcher detects the change and copies the updated file into `~/.claude/`. Log output goes to `/tmp/credential-watcher.log` inside the container.
 
-**Implication**: Container-side token refreshes are still lost on restart. Host-side refreshes are now picked up automatically.
+**macOS token expiry (mid-session)**: On macOS, Claude Code stores OAuth tokens in the system Keychain. If a token expires while the container is running, re-authenticating on the host updates the Keychain but not the filesystem — so the bind mount sees no change and the watcher is not triggered. To propagate new Keychain credentials into the running container without a rebuild, run on the host:
+
+```bash
+make refresh-credentials   # or: bash scripts/macos-refresh-credentials.sh
+```
+
+This re-extracts the token from Keychain, writes the updated staging file into `~/.claude/`, and the container-side watcher picks it up within a few seconds.
+
+**Implication**: Container-side token refreshes are still lost on restart. Host-side refreshes (filesystem or Keychain via `make refresh-credentials`) are picked up automatically without a rebuild.
 
 ## Extending the Sandbox
 

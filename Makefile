@@ -1,4 +1,4 @@
-.PHONY: setup build status clean test-template help
+.PHONY: setup build status clean test-template refresh-credentials help
 
 IMAGE_TAG        ?= claude-code-devcontainer:latest
 
@@ -53,6 +53,10 @@ test-template:
 	test ! -f .claude/commands/init-project.md        && echo "  ✓ init-project removed"; \
 	test -f .claude/commands/improve-repo.md          && echo "  ✓ improve-repo preserved"; \
 	echo "Template test passed."
+
+## refresh-credentials   Re-extract macOS Keychain credentials into the running container (no rebuild needed)
+refresh-credentials:
+	@bash scripts/macos-refresh-credentials.sh
 
 ## help     Show available targets
 help:
