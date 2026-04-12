@@ -55,7 +55,31 @@ On macOS, both Claude Code and GitHub CLI may store OAuth tokens in the system K
 - **GitHub CLI**: `gh auth token` → staged to `~/.config/gh/.devcontainer-hosts.yml`
 - **Claude Code**: `security find-generic-password` → staged to `~/.claude/.devcontainer-credentials.json`
 
-`post-create.sh` detects these staging files and moves them into the container's writable credential locations, overriding any empty filesystem copies. Staging files are consumed (moved, not copied) so they don't persist.
+`post-create.sh` detects these staging files and copies them into the container's writable credential locations, overriding any empty filesystem copies.
+
+### Mid-session token refresh (macOS)
+
+`initializeCommand` runs only at container creation. If a Claude Code token expires while the container is running and the user re-authenticates on the host, the new token lands in the Keychain — not on the filesystem — so the bind mount at `/run/host-secrets/` sees no change and the `inotifywait` watcher is not triggered.
+
+`scripts/macos-refresh-credentials.sh` closes this gap. It re-runs the Keychain extraction on demand and writes updated staging files into `~/.claude/`. Because those files live inside the bind-mounted `~/.claude/` directory, `inotifywait` detects the write and `credential-watcher.sh` applies the new credentials within seconds — no rebuild needed.
+
+```
+User re-auths on host
+       │
+       ▼
+make refresh-credentials (runs on host)
+       │
+       ├── security find-generic-password → ~/.claude/.devcontainer-credentials.json
+       └── gh auth token                 → ~/.config/gh/.devcontainer-hosts.yml
+                       │
+                       ▼  (bind mount propagates)
+              /run/host-secrets/claude-dir/.devcontainer-credentials.json
+                       │
+                       ▼  (inotifywait fires)
+              credential-watcher.sh copies → ~/.claude/.credentials.json
+```
+
+The credential watcher checks `.devcontainer-credentials.json` after `.credentials.json` in `copy_credentials()`, so the Keychain-exported copy takes precedence over any stale filesystem copy.
 
 ## Nested Container Architecture
 

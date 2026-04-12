@@ -70,6 +70,7 @@ Open this folder in VS Code and choose **"Reopen in Container"** when prompted, 
 | `make build` | Rebuild the image after `Containerfile` changes |
 | `make status` | Show runtime and container state |
 | `make clean` | Remove the image |
+| `make refresh-credentials` | Re-extract macOS Keychain credentials into the running container (no rebuild needed) |
 
 ---
 
@@ -129,6 +130,7 @@ A pre-commit hook scans both `.claude/memory/` and `.knowledge/` for secrets and
 ├── CLAUDE.md                         # Claude Code context (template version)
 ├── scripts/
 │   ├── detect-os.sh                  # Exports $DETECTED_OS (macos | wsl2)
+│   ├── macos-refresh-credentials.sh  # Re-extracts Keychain credentials mid-session (no rebuild)
 │   ├── hooks/
 │   │   └── pre-commit                # Secret scanner: blocks commits with credentials
 │   └── wsl2/
@@ -191,3 +193,10 @@ Your distro may not have systemd enabled. Run:
 systemctl --user status podman.socket
 ```
 If systemd is unavailable, `setup.sh` falls back to starting the socket directly — restart your WSL2 session and try again.
+
+**Claude token expired inside the container (macOS)**
+On macOS, Claude Code stores OAuth tokens in the system Keychain. If your token expires mid-session, re-authenticate on the host and then run:
+```bash
+make refresh-credentials
+```
+This re-extracts the new token from Keychain and propagates it into the running container via the credential watcher — no rebuild required. Check `/tmp/credential-watcher.log` inside the container to confirm the refresh was applied.
