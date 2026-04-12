@@ -4,7 +4,6 @@
 set -euo pipefail
 
 INPUT=$(cat)
-SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // "unknown"')
 TRANSCRIPT=$(echo "$INPUT" | jq -r '.transcript_path // ""')
 CWD=$(echo "$INPUT" | jq -r '.cwd // ""')
 
